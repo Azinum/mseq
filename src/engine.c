@@ -5,10 +5,8 @@
 #include <math.h>
 
 #include "common.h"
+#include "instrument.h"
 #include "engine.h"
-
-#define PI32 3.14159265359f
-#define ARR_SIZE(ARR) ((sizeof(ARR)) / (sizeof(ARR[0])))
 
 typedef struct Engine {
   int32_t sample_rate;
@@ -17,39 +15,27 @@ typedef struct Engine {
   PaStreamParameters in_port, out_port;
 } Engine;
 
+int32_t engine_time = 0;
+
 static Engine engine;
-static int32_t time = 0;
 static int32_t index = 0;
 
 static int32_t stereo_callback(const void* in_buff, void* out_buff, uint64_t frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data);
-static float sine_wave(float amp, float freq);
 static int32_t open_stream();
-
-#define C1 100
-
-static int32_t seq_table[] = {
-  C1, C1 * 2, C1 * 2 * 2, C1 * 2 * 2 * 2
-};
 
 int32_t stereo_callback(const void* in_buff, void* out_buff, uint64_t frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data) {
   float* out = (float*)out_buff;
   const int32_t freq = 200;
-  int32_t delay = 16 * frames_per_buffer;
 
   for (int32_t i = 0; i < (int32_t)frames_per_buffer; i++) {
-    if (!(time % delay)) {
-      index = (index + 1) % ARR_SIZE(seq_table);
-    }
-    *out++ = sine_wave(0.1f, seq_table[index]);
-    *out++ = sine_wave(0.1f, seq_table[index]);
-    time++;
+    float frame = instrument_mix();
+    *out++ = frame;
+    *out++ = frame;
+    engine_time++;
   }
   return paContinue;
 }
 
-float sine_wave(float amp, float freq) {
-  return amp * sin(2 * PI32 * time / (engine.sample_rate / freq));  
-}
 
 int32_t open_stream() {
   PaError err = Pa_OpenStream(
