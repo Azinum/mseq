@@ -3,6 +3,6 @@
 #ifndef _INSTRUMENT_H
 #define _INSTRUMENT_H
 
-float instrument_mix();
+float instrument_process();
 
 #endif

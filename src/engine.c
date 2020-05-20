@@ -28,7 +28,7 @@ int32_t stereo_callback(const void* in_buff, void* out_buff, uint64_t frames_per
   const int32_t freq = 200;
 
   for (int32_t i = 0; i < (int32_t)frames_per_buffer; i++) {
-    float frame = instrument_mix();
+    float frame = instrument_process();
     *out++ = frame;
     *out++ = frame;
     engine_time++;
