@@ -71,6 +71,8 @@ int32_t engine_init(int32_t sample_rate, int32_t frames_per_buffer) {
   engine.out_port.sampleFormat = paFloat32;
   engine.out_port.suggestedLatency = Pa_GetDeviceInfo(engine.out_port.device)->defaultLowOutputLatency;
   engine.out_port.hostApiSpecificStreamInfo = NULL;
+
+  instrument_init();
   return 0;
 }
 

@@ -6,13 +6,22 @@
 #include "waveforms.h"
 #include "instrument.h"
 
-#define C1 100
+#define STANDARD_PITCH 220
+#define NOTE_FREQ(SEMI_TONE) (STANDARD_PITCH * powf(2, SEMI_TONE / 12.0f))
+#define N(FREQ) NOTE_FREQ(FREQ)
 
 static int index = 0;
 static int tempo = 20;
-static int32_t seq_table[] = {
-  C1, C1 * 2, C1 * 2 * 2, C1 * 2 * 2 * 2
+static int32_t seq_table[4] = {
+  0, 0, 0, 0
 };
+
+void instrument_init() {
+  seq_table[0] = N(0);
+  seq_table[1] = N(3);
+  seq_table[2] = N(5);
+  seq_table[3] = N(8);
+}
 
 float instrument_process() {
   if (!(engine_time % (tempo * FRAMES_PER_BUFFER))) {
