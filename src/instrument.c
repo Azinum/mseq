@@ -17,6 +17,8 @@ enum Note_state {
   STATE_RELEASE,
 };
 
+typedef float (*proc_func)(float, float);
+
 struct Note_info {
   float freq;
   float amp;
@@ -25,15 +27,16 @@ struct Note_info {
   int hold_time;
   int time;
   int state;
+  proc_func process;
 };
 
 static int index = 0;
 static int tempo = 40;
 static struct Note_info seq_table[] = {
-  {0, 0, 0.00001f, 0.05f, 5000, 0, STATE_NONE},
-  {0, 0, 0.00001f, 0.05f, 5000, 0, STATE_NONE},
-  {0, 0, 0.00001f, 0.05f, 5000, 0, STATE_NONE},
-  {0, 0, 0.00001f, 0.05f, 5000, 0, STATE_NONE},
+  {0, 0, 0.00001f, 0.05f, 5000, 0, STATE_NONE, wf_sine},
+  {0, 0, 0.00001f, 0.05f, 5000, 0, STATE_NONE, wf_square},
+  {0, 0, 0.00001f, 0.05f, 5000, 0, STATE_NONE, wf_sine},
+  {0, 0, 0.00001f, 0.05f, 5000, 0, STATE_NONE, wf_square},
 };
 
 static float amp_max = 0.2f;
@@ -79,7 +82,7 @@ float instrument_process() {
       default:
         break;
     }
-    result += wf_square(note->amp, note->freq);
+    result += note->process(note->amp, note->freq);
   }
   return result;
 }
