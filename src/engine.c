@@ -3,6 +3,8 @@
 #include <portaudio.h>
 #include <stdio.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "common.h"
 #include "instrument.h"
@@ -34,6 +36,12 @@ int32_t stereo_callback(const void* in_buff, void* out_buff, uint64_t frames_per
     *out++ = frame;
     *out++ = frame;
     engine_time++;
+  }
+  int32_t note_freq = rand() % 36;
+  int32_t r = rand() % 4;
+  int32_t i = rand() % 4;
+  if (!r) {
+    instrument_change_note_freq(i, NOTE_FREQ(note_freq));
   }
   return paContinue;
 }

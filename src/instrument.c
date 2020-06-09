@@ -86,7 +86,7 @@ float instrument_process() {
 }
 
 void instrument_change_note_freq(int32_t index, float freq) {
-  assert(index > (int32_t)ARR_SIZE(seq_table));
+  assert(index < (int32_t)ARR_SIZE(seq_table));
   struct Note_info* note = &seq_table[index];
   note->freq = freq;
 }

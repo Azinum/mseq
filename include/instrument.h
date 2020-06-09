@@ -3,7 +3,7 @@
 #ifndef _INSTRUMENT_H
 #define _INSTRUMENT_H
 
-#define STANDARD_PITCH 220
+#define STANDARD_PITCH 220 / 2
 #define NOTE_FREQ(SEMI_TONE) (STANDARD_PITCH * powf(2, SEMI_TONE / 12.0f))
 #define N(FREQ) NOTE_FREQ(FREQ)
 
