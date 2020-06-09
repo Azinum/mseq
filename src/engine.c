@@ -18,14 +18,16 @@ typedef struct Engine {
 int32_t engine_time = 0;
 
 static Engine engine;
-static int32_t index = 0;
 
 static int32_t stereo_callback(const void* in_buff, void* out_buff, uint64_t frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data);
 static int32_t open_stream();
 
 int32_t stereo_callback(const void* in_buff, void* out_buff, uint64_t frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data) {
   float* out = (float*)out_buff;
-  const int32_t freq = 200;
+  (void)in_buff;
+  (void)time_info;
+  (void)flags;
+  (void)user_data;
 
   for (int32_t i = 0; i < (int32_t)frames_per_buffer; i++) {
     float frame = instrument_process();
@@ -84,5 +86,5 @@ int32_t engine_start() {
 }
 
 void engine_free() {
-
+  Pa_Terminate();
 }

@@ -1,14 +1,12 @@
 // instrument.c
 
+#include <assert.h>
+
 #include "common.h"
 #include "engine.h"
 #include "mseq.h"
 #include "waveforms.h"
 #include "instrument.h"
-
-#define STANDARD_PITCH 220
-#define NOTE_FREQ(SEMI_TONE) (STANDARD_PITCH * powf(2, SEMI_TONE / 12.0f))
-#define N(FREQ) NOTE_FREQ(FREQ)
 
 enum Note_state {
   STATE_NONE,
@@ -30,8 +28,8 @@ struct Note_info {
   proc_func process;
 };
 
-static int index = 0;
-static int tempo = 40;
+static int32_t index = 0;
+static int32_t tempo = 40;
 static struct Note_info seq_table[] = {
   {0, 0, 0.00001f, 0.05f, 5000, 0, STATE_NONE, wf_sine},
   {0, 0, 0.00001f, 0.05f, 5000, 0, STATE_NONE, wf_square},
@@ -56,7 +54,7 @@ float instrument_process() {
     current_note->state = STATE_ATTACK;
     current_note->amp = 0;
   }
-  for (int i = 0; i < (int)ARR_SIZE(seq_table); i++) {
+  for (int32_t i = 0; i < (int32_t)ARR_SIZE(seq_table); i++) {
     struct Note_info* note = &seq_table[i];
     switch (note->state) {
       case STATE_ATTACK: {
@@ -85,4 +83,10 @@ float instrument_process() {
     result += note->process(note->amp, note->freq);
   }
   return result;
+}
+
+void instrument_change_note_freq(int32_t index, float freq) {
+  assert(index > (int32_t)ARR_SIZE(seq_table));
+  struct Note_info* note = &seq_table[index];
+  note->freq = freq;
 }
