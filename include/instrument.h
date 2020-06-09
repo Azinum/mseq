@@ -11,6 +11,6 @@ void instrument_init();
 
 float instrument_process();
 
-void instrument_change_note_freq(int32_t index, float freq);
+void instrument_change_note_freq(int32_t index, int32_t note_value);
 
 #endif

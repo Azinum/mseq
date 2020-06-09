@@ -1,6 +1,7 @@
 // instrument.c
 
 #include <assert.h>
+#include <stdio.h>
 
 #include "common.h"
 #include "engine.h"
@@ -19,6 +20,7 @@ typedef float (*proc_func)(float, float);
 
 struct Note_info {
   float freq;
+  int32_t note_value;
   float amp;
   float release_speed;
   float attack_speed;
@@ -29,21 +31,18 @@ struct Note_info {
 };
 
 static int32_t index = 0;
-static int32_t tempo = 40;
+static int32_t tempo = (60 * 60) / 160;
 static struct Note_info seq_table[] = {
-  {0, 0, 0.00001f, 0.05f, 5000, 0, STATE_NONE, wf_sine},
-  {0, 0, 0.00001f, 0.05f, 5000, 0, STATE_NONE, wf_square},
-  {0, 0, 0.00001f, 0.05f, 5000, 0, STATE_NONE, wf_sine},
-  {0, 0, 0.00001f, 0.05f, 5000, 0, STATE_NONE, wf_square},
+  {0, 12, 0, 0.00001f, 0.01f, 5000, 0, STATE_NONE, wf_square},
+  {0, 12, 0, 0.00001f, 0.01f, 5000, 0, STATE_NONE, wf_saw},
+  {0, 12, 0, 0.00001f, 0.01f, 5000, 0, STATE_NONE, wf_square},
+  {0, 12, 0, 0.00001f, 0.01f, 5000, 0, STATE_NONE, wf_saw},
 };
 
 static float amp_max = 0.2f;
 
 void instrument_init() {
-  seq_table[0].freq = N(0);
-  seq_table[1].freq = N(3);
-  seq_table[2].freq = N(0);
-  seq_table[3].freq = N(7);
+
 }
 
 float instrument_process() {
@@ -51,6 +50,7 @@ float instrument_process() {
   struct Note_info* current_note = &seq_table[index];
   if (!(engine_time % (tempo * FRAMES_PER_BUFFER))) {
     index = (index + 1) % (ARR_SIZE(seq_table));
+    current_note->freq = NOTE_FREQ(current_note->note_value);
     current_note->state = STATE_ATTACK;
     current_note->amp = 0;
   }
@@ -85,8 +85,8 @@ float instrument_process() {
   return result;
 }
 
-void instrument_change_note_freq(int32_t index, float freq) {
+void instrument_change_note_freq(int32_t index, int32_t note_value) {
   assert(index < (int32_t)ARR_SIZE(seq_table));
   struct Note_info* note = &seq_table[index];
-  note->freq = freq;
+  note->note_value = note_value;
 }
