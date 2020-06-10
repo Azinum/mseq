@@ -70,14 +70,14 @@ float instrument_process() {
     current_note->amp = 0;
   }*/
   if (!(engine_time % (tempo * FRAMES_PER_BUFFER))) {
-    printf("%i", step);
+    printf("%-2i", step);
     if (bar_seq[step] >= 0) {
-      printf(" *");
       index = bar_seq[step];
       assert(index < (int32_t)ARR_SIZE(seq_table));
       current_note->freq = NOTE_FREQ(current_note->note_value);
       current_note->state = STATE_ATTACK;
       current_note->amp = 0;
+      printf(" * [%i]", index);
     }
     printf("\n");
     step = (step + 1) % BAR_LENGTH;

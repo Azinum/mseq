@@ -37,13 +37,12 @@ int32_t stereo_callback(const void* in_buff, void* out_buff, uint64_t frames_per
     *out++ = frame;
     engine_time++;
   }
-  /*int32_t note_value = (!(rand() % 2)) ? 3 : 4;
+  int32_t note_value = (!(rand() % 2)) ? 3 : 4;
   note_value *= (rand() % 8) + 1;
   int32_t r = rand() % 50;
   int32_t i = rand() % 4;
   if (!r)
     instrument_change_note_freq(i, note_value);
-  */
   return paContinue;
 }
 
