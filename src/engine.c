@@ -43,8 +43,8 @@ int32_t stereo_callback(const void* in_buff, void* out_buff, uint64_t frames_per
     *out++ = frame;
     engine_time++;
   }
-  int32_t note_value = (!(rand() % 2)) ? 3 : 4;
-  note_value *= (rand() % 5) + 1;
+  int32_t note_value = (!(rand() % 2)) ? 5 : 7;
+  note_value *= (rand() % 10) + 1;
   int32_t r = rand() % 50;
   int32_t i = rand() % 4;
   if (!r)
@@ -85,7 +85,7 @@ int32_t engine_init(int32_t sample_rate, int32_t frames_per_buffer) {
   engine.out_port.device = Pa_GetDefaultOutputDevice();
   engine.out_port.channelCount = 2;
   engine.out_port.sampleFormat = paFloat32;
-  engine.out_port.suggestedLatency = Pa_GetDeviceInfo(engine.out_port.device)->defaultLowOutputLatency;
+  engine.out_port.suggestedLatency = Pa_GetDeviceInfo(engine.out_port.device)->defaultHighOutputLatency;
   engine.out_port.hostApiSpecificStreamInfo = NULL;
 
   instrument_init(&instrument);
@@ -95,10 +95,10 @@ int32_t engine_init(int32_t sample_rate, int32_t frames_per_buffer) {
   instrument_add_node(&instrument, 24, 0.00001f, 0.001f, 100, wf_sine);
 
   instrument_init(&instrument2);
-  instrument_add_node(&instrument2, -12, 0.0001f, 0.001f, 10000, wf_sine);
-  instrument_add_node(&instrument2, -7, 0.0001f, 0.001f, 10000, wf_sine);
-  instrument_add_node(&instrument2, 0, 0.01f, 0.01f, 10000, wf_sine);
-  instrument_add_node(&instrument2, 0, 0.01f, 0.01f, 10000, wf_sine);
+  instrument_add_node(&instrument2, -12, 0.001f, 0.1f, 100, wf_sine);
+  instrument_add_node(&instrument2, -7, 0.001f, 0.1f, 100, wf_sine);
+  instrument_add_node(&instrument2, 0, 0.001f, 0.1f, 100, wf_sine);
+  instrument_add_node(&instrument2, 0, 0.001f, 0.1f, 100, wf_sine);
   return 0;
 }
 
