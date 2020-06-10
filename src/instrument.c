@@ -31,28 +31,56 @@ struct Note_info {
 };
 
 static int32_t index = 0;
-static int32_t tempo = (60 * 60) / 160;
+static int32_t step = 0;
+static int32_t tempo = (60 * 60) / 250;
 static struct Note_info seq_table[] = {
-  {0, 12, 0, 0.00001f, 0.01f, 5000, 0, STATE_NONE, wf_square},
-  {0, 12, 0, 0.00001f, 0.01f, 5000, 0, STATE_NONE, wf_saw},
-  {0, 12, 0, 0.00001f, 0.01f, 5000, 0, STATE_NONE, wf_square},
-  {0, 12, 0, 0.00001f, 0.01f, 5000, 0, STATE_NONE, wf_saw},
+  {0, 24, 0, 0.00001f, 0.01f, 5000, 0, STATE_NONE, wf_sine},
+  {0, 20, 0, 0.00001f, 0.01f, 5000, 0, STATE_NONE, wf_sine},
+  {0, 21, 0, 0.00001f, 0.01f, 5000, 0, STATE_NONE, wf_sine},
+  {0, 27, 0, 0.00001f, 0.01f, 5000, 0, STATE_NONE, wf_sine},
 };
+
+#define BAR_LENGTH 16
+
+static int32_t bar_seq[BAR_LENGTH] = {0};
 
 static float amp_max = 0.2f;
 
 void instrument_init() {
+  for (int32_t i = 0; i < BAR_LENGTH; i++)
+    bar_seq[i] = -1;
+  bar_seq[0] = 0;
 
+  bar_seq[1] = 1;
+  bar_seq[2] = 2;
+  bar_seq[3] = 3;
+
+  bar_seq[4] = 1;
+  bar_seq[8] = 2;
+  bar_seq[12] = 3;
 }
 
 float instrument_process() {
   float result = 0;
   struct Note_info* current_note = &seq_table[index];
-  if (!(engine_time % (tempo * FRAMES_PER_BUFFER))) {
+  /*if (!(engine_time % (tempo * FRAMES_PER_BUFFER))) {
     index = (index + 1) % (ARR_SIZE(seq_table));
     current_note->freq = NOTE_FREQ(current_note->note_value);
     current_note->state = STATE_ATTACK;
     current_note->amp = 0;
+  }*/
+  if (!(engine_time % (tempo * FRAMES_PER_BUFFER))) {
+    printf("%i", step);
+    if (bar_seq[step] >= 0) {
+      printf(" *");
+      index = bar_seq[step];
+      assert(index < (int32_t)ARR_SIZE(seq_table));
+      current_note->freq = NOTE_FREQ(current_note->note_value);
+      current_note->state = STATE_ATTACK;
+      current_note->amp = 0;
+    }
+    printf("\n");
+    step = (step + 1) % BAR_LENGTH;
   }
   for (int32_t i = 0; i < (int32_t)ARR_SIZE(seq_table); i++) {
     struct Note_info* note = &seq_table[i];
