@@ -16,8 +16,6 @@ enum Note_state {
   STATE_RELEASE,
 };
 
-static int32_t index = 0;
-static int32_t step = 0;
 static int32_t tempo = (60 * 60) / 250;
 
 static float amp_max = 0.2f;
@@ -26,11 +24,9 @@ void instrument_init(struct Instrument* ins) {
   for (int32_t i = 0; i < BAR_LENGTH; i++)
     ins->bar_seq[i] = -1;
   ins->bar_seq[0] = 0;
-
-  ins->bar_seq[1] = 1;
+  ins->bar_seq[1] = 3;
   ins->bar_seq[2] = 2;
-  ins->bar_seq[3] = 3;
-
+  ins->bar_seq[3] = 1;
   ins->bar_seq[4] = 1;
   ins->bar_seq[8] = 2;
   ins->bar_seq[12] = 3;
@@ -42,19 +38,16 @@ void instrument_init(struct Instrument* ins) {
 
 float instrument_process(struct Instrument* ins) {
   float result = 0;
-  struct Note_info* current_note = &ins->seq_table[index];
+  struct Note_info* current_note = &ins->seq_table[ins->index];
   if (!(engine_time % (tempo * FRAMES_PER_BUFFER))) {
-    printf("%-2i", step); // DEBUG
-    if (ins->bar_seq[step] >= 0) {
-      index = ins->bar_seq[step];
-      assert(index < MAX_SEQ_NODES);
+    if (ins->bar_seq[ins->step] >= 0) {
+      ins->index = ins->bar_seq[ins->step];
+      assert(ins->index < MAX_SEQ_NODES);
       current_note->freq = NOTE_FREQ(current_note->note_value);
       current_note->state = STATE_ATTACK;
       current_note->amp = 0;
-      printf(" * [%i]", index);
     }
-    printf("\n");
-    step = (step + 1) % BAR_LENGTH;
+    ins->step = (ins->step + 1) % BAR_LENGTH;
   }
   for (int32_t i = 0; i < MAX_SEQ_NODES; i++) {
     struct Note_info* note = &ins->seq_table[i];

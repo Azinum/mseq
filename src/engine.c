@@ -23,6 +23,7 @@ int32_t engine_time = 0;
 static Engine engine;
 
 struct Instrument instrument;
+struct Instrument instrument2;
 
 static int32_t stereo_callback(const void* in_buff, void* out_buff, uint64_t frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data);
 static int32_t open_stream();
@@ -37,6 +38,7 @@ int32_t stereo_callback(const void* in_buff, void* out_buff, uint64_t frames_per
   for (int32_t i = 0; i < (int32_t)frames_per_buffer; i++) {
     float frame = 0;
     frame += instrument_process(&instrument);
+    frame += instrument_process(&instrument2);
     *out++ = frame;
     *out++ = frame;
     engine_time++;
@@ -87,10 +89,16 @@ int32_t engine_init(int32_t sample_rate, int32_t frames_per_buffer) {
   engine.out_port.hostApiSpecificStreamInfo = NULL;
 
   instrument_init(&instrument);
-  instrument_add_node(&instrument, 24, 0.00001f, 0.00001f, 100, wf_sine);
-  instrument_add_node(&instrument, 24, 0.00001f, 0.00001f, 100, wf_sine);
-  instrument_add_node(&instrument, 24, 0.00001f, 0.00001f, 100, wf_sine);
-  instrument_add_node(&instrument, 24, 0.00001f, 0.00001f, 100, wf_sine);
+  instrument_add_node(&instrument, 24, 0.00001f, 0.001f, 100, wf_sine);
+  instrument_add_node(&instrument, 24, 0.00001f, 0.001f, 100, wf_sine);
+  instrument_add_node(&instrument, 24, 0.00001f, 0.001f, 100, wf_sine);
+  instrument_add_node(&instrument, 24, 0.00001f, 0.001f, 100, wf_sine);
+
+  instrument_init(&instrument2);
+  instrument_add_node(&instrument2, -12, 0.0001f, 0.001f, 10000, wf_sine);
+  instrument_add_node(&instrument2, -7, 0.0001f, 0.001f, 10000, wf_sine);
+  instrument_add_node(&instrument2, 0, 0.01f, 0.01f, 10000, wf_sine);
+  instrument_add_node(&instrument2, 0, 0.01f, 0.01f, 10000, wf_sine);
   return 0;
 }
 
