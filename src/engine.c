@@ -82,7 +82,17 @@ int32_t engine_init(int32_t sample_rate, int32_t frames_per_buffer) {
   engine.sample_rate = sample_rate;
   engine.frames_per_buffer = frames_per_buffer;
 
-  engine.out_port.device = Pa_GetDefaultOutputDevice();
+  int32_t device_count = Pa_GetDeviceCount();
+  int32_t output_device = 9 % device_count;
+  printf("Avaliable output devices:\n");
+  for (int32_t i = 0; i < device_count; i++) {
+    const PaDeviceInfo* device_info = Pa_GetDeviceInfo(i);
+    printf("  %s", device_info->name);
+    if (output_device == i)
+      printf(" [selected]");
+    printf("\n");
+  }
+  engine.out_port.device = output_device;// Pa_GetDefaultOutputDevice();
   engine.out_port.channelCount = 2;
   engine.out_port.sampleFormat = paFloat32;
   engine.out_port.suggestedLatency = Pa_GetDeviceInfo(engine.out_port.device)->defaultHighOutputLatency;
