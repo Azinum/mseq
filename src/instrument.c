@@ -16,7 +16,7 @@ enum Note_state {
   STATE_RELEASE,
 };
 
-static int32_t tempo = (60 * 60) / 250;
+static int32_t tempo = (60 * 60) / 400;
 
 static float amp_max = 0.2f;
 

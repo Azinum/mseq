@@ -44,11 +44,11 @@ int32_t stereo_callback(const void* in_buff, void* out_buff, uint64_t frames_per
     engine_time++;
   }
   int32_t note_value = (!(rand() % 2)) ? 5 : 7;
-  note_value *= (rand() % 10) + 1;
+  note_value *= (rand() % 4) + 1;
   int32_t r = rand() % 50;
   int32_t i = rand() % 4;
   if (!r)
-    instrument_change_note_freq(&instrument2, i, note_value);
+    instrument_change_note_freq(&instrument, i, note_value);
   return paContinue;
 }
 
@@ -72,7 +72,7 @@ int32_t open_stream() {
   return 0;
 }
 
-int32_t engine_init(int32_t sample_rate, int32_t frames_per_buffer) {
+int32_t engine_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_per_buffer) {
   PaError err = Pa_Initialize();
   if (err != paNoError) {
     Pa_Terminate();
@@ -83,7 +83,9 @@ int32_t engine_init(int32_t sample_rate, int32_t frames_per_buffer) {
   engine.frames_per_buffer = frames_per_buffer;
 
   int32_t device_count = Pa_GetDeviceCount();
-  int32_t output_device = 9 % device_count;
+  int32_t output_device = output_device_id % device_count;
+  if (output_device_id < 0)
+    output_device = Pa_GetDefaultOutputDevice();
   printf("Avaliable output devices:\n");
   for (int32_t i = 0; i < device_count; i++) {
     const PaDeviceInfo* device_info = Pa_GetDeviceInfo(i);
@@ -92,23 +94,23 @@ int32_t engine_init(int32_t sample_rate, int32_t frames_per_buffer) {
       printf(" [selected]");
     printf("\n");
   }
-  engine.out_port.device = output_device;// Pa_GetDefaultOutputDevice();
+  engine.out_port.device = output_device;
   engine.out_port.channelCount = 2;
   engine.out_port.sampleFormat = paFloat32;
   engine.out_port.suggestedLatency = Pa_GetDeviceInfo(engine.out_port.device)->defaultHighOutputLatency;
   engine.out_port.hostApiSpecificStreamInfo = NULL;
 
   instrument_init(&instrument);
-  instrument_add_node(&instrument, 24, 0.00001f, 0.001f, 100, wf_sine);
-  instrument_add_node(&instrument, 24, 0.00001f, 0.001f, 100, wf_sine);
-  instrument_add_node(&instrument, 24, 0.00001f, 0.001f, 100, wf_sine);
-  instrument_add_node(&instrument, 24, 0.00001f, 0.001f, 100, wf_sine);
+  instrument_add_node(&instrument, 32, 0.000005f, 0.001f, 100, wf_sine);
+  instrument_add_node(&instrument, 32, 0.000005f, 0.001f, 100, wf_sine);
+  instrument_add_node(&instrument, 32, 0.000005f, 0.001f, 100, wf_sine);
+  instrument_add_node(&instrument, 32, 0.000005f, 0.001f, 100, wf_sine);
 
   instrument_init(&instrument2);
-  instrument_add_node(&instrument2, -12, 0.001f, 0.1f, 100, wf_sine);
-  instrument_add_node(&instrument2, -7, 0.001f, 0.1f, 100, wf_sine);
-  instrument_add_node(&instrument2, 0, 0.001f, 0.1f, 100, wf_sine);
-  instrument_add_node(&instrument2, 0, 0.001f, 0.1f, 100, wf_sine);
+  instrument_add_node(&instrument2, -12, 0.0001f, 0.001f, 3000, wf_sine);
+  instrument_add_node(&instrument2, -7, 0.0001f, 0.001f, 3000, wf_sine);
+  instrument_add_node(&instrument2, 0, 0.0001f, 0.001f, 3000, wf_sine);
+  instrument_add_node(&instrument2, 0, 0.0001f, 0.001f, 3000, wf_sine);
   return 0;
 }
 

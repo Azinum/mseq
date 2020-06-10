@@ -4,6 +4,6 @@
 
 #include "mseq.h"
 
-int main() {
-  return mseq_start();
+int main(int argc, char** argv) {
+  return mseq_start(argc, argv);
 }
