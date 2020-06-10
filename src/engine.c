@@ -8,6 +8,7 @@
 
 #include "common.h"
 #include "instrument.h"
+#include "waveforms.h"
 #include "engine.h"
 
 typedef struct Engine {
@@ -21,6 +22,8 @@ int32_t engine_time = 0;
 
 static Engine engine;
 
+struct Instrument instrument;
+
 static int32_t stereo_callback(const void* in_buff, void* out_buff, uint64_t frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data);
 static int32_t open_stream();
 
@@ -32,7 +35,8 @@ int32_t stereo_callback(const void* in_buff, void* out_buff, uint64_t frames_per
   (void)user_data;
 
   for (int32_t i = 0; i < (int32_t)frames_per_buffer; i++) {
-    float frame = instrument_process();
+    float frame = 0;
+    frame += instrument_process(&instrument);
     *out++ = frame;
     *out++ = frame;
     engine_time++;
@@ -42,7 +46,7 @@ int32_t stereo_callback(const void* in_buff, void* out_buff, uint64_t frames_per
   int32_t r = rand() % 50;
   int32_t i = rand() % 4;
   if (!r)
-    instrument_change_note_freq(i, note_value);
+    instrument_change_note_freq(&instrument, i, note_value);
   return paContinue;
 }
 
@@ -82,7 +86,11 @@ int32_t engine_init(int32_t sample_rate, int32_t frames_per_buffer) {
   engine.out_port.suggestedLatency = Pa_GetDeviceInfo(engine.out_port.device)->defaultLowOutputLatency;
   engine.out_port.hostApiSpecificStreamInfo = NULL;
 
-  instrument_init();
+  instrument_init(&instrument);
+  instrument_add_node(&instrument, 24, 0.00001f, 0.00001f, 100, wf_sine);
+  instrument_add_node(&instrument, 24, 0.00001f, 0.00001f, 100, wf_sine);
+  instrument_add_node(&instrument, 24, 0.00001f, 0.00001f, 100, wf_sine);
+  instrument_add_node(&instrument, 24, 0.00001f, 0.00001f, 100, wf_sine);
   return 0;
 }
 

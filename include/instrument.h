@@ -7,10 +7,37 @@
 #define NOTE_FREQ(SEMI_TONE) (STANDARD_PITCH * powf(2, SEMI_TONE / 12.0f))
 #define N(FREQ) NOTE_FREQ(FREQ)
 
-void instrument_init();
+#define BAR_LENGTH 16
+#define MAX_SEQ_NODES 8
 
-float instrument_process();
+typedef float (*proc_func)(float, float);
 
-void instrument_change_note_freq(int32_t index, int32_t note_value);
+struct Note_info {
+  float freq;
+  int32_t note_value;
+  float amp;
+  float release_speed;
+  float attack_speed;
+  int32_t hold_time;
+  int32_t time;
+  int32_t state;
+  proc_func process;
+};
+
+struct Instrument {
+  struct Note_info seq_table[MAX_SEQ_NODES];
+  int16_t bar_seq[BAR_LENGTH];
+  int16_t seq_node_count;
+  int16_t index;  // NOTE(lucas): index and step are unused - they are shared between instruments
+  int16_t step;
+};
+
+void instrument_init(struct Instrument* ins);
+
+float instrument_process(struct Instrument* ins);
+
+void instrument_change_note_freq(struct Instrument* ins, int32_t index, int32_t note_value);
+
+int32_t instrument_add_node(struct Instrument* ins, int32_t note_value, float release_speed, float attack_speed, float hold_time, proc_func process_func);
 
 #endif
