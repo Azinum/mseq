@@ -44,11 +44,11 @@ int32_t stereo_callback(const void* in_buff, void* out_buff, uint64_t frames_per
     engine_time++;
   }
   int32_t note_value = (!(rand() % 2)) ? 3 : 4;
-  note_value *= (rand() % 8) + 1;
+  note_value *= (rand() % 5) + 1;
   int32_t r = rand() % 50;
   int32_t i = rand() % 4;
   if (!r)
-    instrument_change_note_freq(&instrument, i, note_value);
+    instrument_change_note_freq(&instrument2, i, note_value);
   return paContinue;
 }
 
@@ -103,7 +103,8 @@ int32_t engine_init(int32_t sample_rate, int32_t frames_per_buffer) {
 }
 
 int32_t engine_start() {
-  open_stream();
+  if (open_stream() < 0)
+    return -1;
   Pa_StartStream(engine.stream);
   getchar();
   return 0;
