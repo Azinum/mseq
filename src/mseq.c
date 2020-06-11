@@ -21,7 +21,6 @@ void args_parse(struct Args* args, int argc, char** argv) {
         case 'd': {
           char* value = argv[i + 1];
           int32_t id = atoi(value);
-          printf("%i\n", id);
           args->output_device_id = id;
           i++;
           break;

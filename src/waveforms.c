@@ -5,11 +5,14 @@
 #include "mseq.h"
 #include "waveforms.h"
 
-inline int sign(float n) {
+inline int sign(float n);
+inline float saw(float n);
+
+int sign(float n) {
   return n >= 0 ? 1 : -1;
 }
 
-inline float saw(float n) {
+float saw(float n) {
   return n < 0.99f ? n : -1.0f;
 }
 
