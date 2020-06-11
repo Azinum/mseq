@@ -10,6 +10,20 @@
 #define BAR_LENGTH 16
 #define MAX_SEQ_NODES 8
 
+enum Note_property {
+  NP_VALUE = 1,
+  NP_RELEASE_SPEED,
+  NP_ATTACK_SPEED,
+  NP_HOLD_TIME,
+  NP_PROCESS
+};
+
+typedef union Note_property_value {
+  float f;
+  int32_t i;
+  void* p;
+} Note_property_value;
+
 typedef float (*proc_func)(float, float);
 
 struct Note_info {
@@ -39,5 +53,7 @@ float instrument_process(struct Instrument* ins);
 void instrument_change_note_freq(struct Instrument* ins, int32_t index, int32_t note_value);
 
 int32_t instrument_add_node(struct Instrument* ins, int32_t note_value, float release_speed, float attack_speed, float hold_time, proc_func process_func);
+
+void instrument_modify_node(struct Instrument* ins, int16_t node_id, enum Note_property prop, Note_property_value value);
 
 #endif
