@@ -16,7 +16,7 @@ enum Note_state {
   STATE_RELEASE,
 };
 
-static int32_t tempo = (60 * 60) / 400;
+static int32_t tempo = (60 * 60) / 500;
 
 static float amp_max = 0.2f;
 
@@ -101,3 +101,32 @@ int32_t instrument_add_node(struct Instrument* ins, int32_t note_value, float re
   note->process = process_func;
   return id;
 }
+
+// TODO(lucas): Refactor!
+void instrument_modify_node(struct Instrument* ins, int16_t node_id, enum Note_property prop, Note_property_value value) {
+  assert(ins != NULL);
+  assert(node_id >= 0 && node_id < MAX_SEQ_NODES);
+  struct Note_info* note = &ins->seq_table[node_id];
+  assert(note != NULL);
+  switch (prop) {
+    case NP_VALUE:
+      note->note_value = value.i;
+      break;
+    case NP_ATTACK_SPEED:
+      note->attack_speed = value.f;
+      break;
+    case NP_RELEASE_SPEED:
+      note->release_speed = value.f;
+      break;
+    case NP_HOLD_TIME:
+      note->hold_time = value.i;
+      break;
+    case NP_PROCESS:
+      note->process = value.p;
+      break;
+    default:
+      assert(0);
+      break;
+  }
+}
+
