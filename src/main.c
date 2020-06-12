@@ -14,7 +14,9 @@ struct Args {
 static void some_func();
 static void args_parse(struct Args* args, int argc, char** argv);
 
-void some_func() {}
+void some_func() {
+  getchar();
+}
 
 void args_parse(struct Args* args, int argc, char** argv) {
   for (int32_t i = 0; i < argc; i++) {
@@ -40,7 +42,13 @@ void args_parse(struct Args* args, int argc, char** argv) {
 }
 
 int main(int argc, char** argv) {
-  mseq_init(-1, 44100, 512);
+  struct Args args = {
+    .output_device_id = -1,
+    .sample_rate = 44100,
+    .frames_per_buffer = 512
+  };
+  args_parse(&args, argc, argv);
+  mseq_init(args.output_device_id, args.sample_rate, args.frames_per_buffer);
   mseq_start(some_func);
   mseq_free();
   return 0;

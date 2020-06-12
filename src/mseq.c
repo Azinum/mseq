@@ -116,6 +116,10 @@ int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_
   return 0;
 }
 
+int32_t mseq_get_sample_rate() {
+  return engine.sample_rate;
+}
+
 int32_t mseq_start(callback_func callback) {
   assert(callback != NULL);
   if (open_stream() < 0)
