@@ -4,7 +4,6 @@
 #include <stdio.h>
 
 #include "common.h"
-#include "engine.h"
 #include "mseq.h"
 #include "waveforms.h"
 #include "instrument.h"

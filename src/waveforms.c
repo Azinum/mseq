@@ -1,7 +1,6 @@
 // waveforms.c
 
 #include "common.h"
-#include "engine.h"
 #include "mseq.h"
 #include "waveforms.h"
 

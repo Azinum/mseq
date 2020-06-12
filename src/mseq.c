@@ -1,64 +1,130 @@
 // mseq.c
 
-#include <stdlib.h>
+#include <portaudio.h>
 #include <stdio.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
 
 #include "common.h"
-#include "engine.h"
+#include "instrument.h"
+#include "waveforms.h"
 #include "mseq.h"
 
-struct Args {
-  int32_t output_device_id;
-};
+typedef struct Engine {
+  int32_t sample_rate;
+  int32_t frames_per_buffer;
+  PaStream* stream;
+  PaStreamParameters in_port, out_port;
+} Engine;
 
-static void args_parse(struct Args* args, int argc, char** argv);
-static void sleep_callback();
+int32_t engine_time = 0;
 
-void args_parse(struct Args* args, int argc, char** argv) {
-  for (int32_t i = 0; i < argc; i++) {
-    char* arg = argv[i];
-    if (arg[0] == '-') {
-      switch (arg[1]) {
-        case 'd': {
-          if (i + 1 >= argc) {
-            fprintf(stderr, "Missing argument\n");
-            break;
-          }
-          char* value = argv[i + 1];
-          int32_t id = atoi(value);
-          args->output_device_id = id;
-          i++;
-          break;
-        }
-        default:
-          break;
-      }
-    }
+static Engine engine;
+
+struct Instrument instrument;
+struct Instrument instrument2;
+
+static int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data);
+static int32_t open_stream();
+
+int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data) {
+  float* out = (float*)out_buff;
+  (void)in_buff;
+  (void)time_info;
+  (void)flags;
+  (void)user_data;
+
+  for (int32_t i = 0; i < (int32_t)frames_per_buffer; i++) {
+    float frame = 0;
+    frame += instrument_process(&instrument);
+    frame += instrument_process(&instrument2);
+    *out++ = frame;
+    *out++ = frame;
+    engine_time++;
   }
+  /*int32_t note_value = (!(rand() % 2)) ? 5 : 7;
+  note_value *= (rand() % 4) + 1;
+  int32_t r = rand() % 50;
+  int32_t i = rand() % 4;
+  if (!r)
+    instrument_change_note_freq(&instrument, i, note_value);
+  */
+  return paContinue;
 }
 
-void sleep_callback() {
-  char ch;
-  ch = getchar();
+
+int32_t open_stream() {
+  PaError err = Pa_OpenStream(
+    &engine.stream,
+    NULL,
+    &engine.out_port,
+    engine.sample_rate,
+    engine.frames_per_buffer,
+    0,
+    stereo_callback, // Callback function that does the audio processing
+    NULL  // User data
+  );
+  if (err != paNoError) {
+    Pa_Terminate();
+    fprintf(stderr, "[portaudio error]: %s\n", Pa_GetErrorText(err));
+    return -1;
+  }
+  return 0;
 }
 
-int32_t mseq_exec(int argc, char** argv) {
-  struct Args args = {
-    .output_device_id = -1,
-  };
-  args_parse(&args, argc, argv);
-  engine_init(args.output_device_id, SAMPLE_RATE, FRAMES_PER_BUFFER);
-  engine_start(sleep_callback);
-  engine_free();
+int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_per_buffer) {
+  PaError err = Pa_Initialize();
+  if (err != paNoError) {
+    Pa_Terminate();
+    fprintf(stderr, "[portaudio error]: %s\n", Pa_GetErrorText(err));
+    return -1;
+  }
+  engine.sample_rate = sample_rate;
+  engine.frames_per_buffer = frames_per_buffer;
+
+  int32_t device_count = Pa_GetDeviceCount();
+  int32_t output_device = output_device_id % device_count;
+  if (output_device_id < 0)
+    output_device = Pa_GetDefaultOutputDevice();
+  printf("Avaliable output devices:\n");
+  for (int32_t i = 0; i < device_count; i++) {
+    const PaDeviceInfo* device_info = Pa_GetDeviceInfo(i);
+    printf("%-2i | %s", i, device_info->name);
+    if (output_device == i)
+      printf(" [selected]");
+    printf("\n");
+  }
+  engine.out_port.device = output_device;
+  engine.out_port.channelCount = 2;
+  engine.out_port.sampleFormat = paFloat32;
+  engine.out_port.suggestedLatency = Pa_GetDeviceInfo(engine.out_port.device)->defaultHighOutputLatency;
+  engine.out_port.hostApiSpecificStreamInfo = NULL;
+
+  instrument_init(&instrument);
+  instrument_add_note(&instrument, 32, 0.00005f, 0.001f, 100, wf_sine);
+  instrument_add_note(&instrument, 32, 0.00005f, 0.001f, 100, wf_sine);
+  instrument_add_note(&instrument, 32, 0.00005f, 0.001f, 100, wf_sine);
+  instrument_add_note(&instrument, 32, 0.00005f, 0.001f, 100, wf_sine);
+
+  instrument_init(&instrument2);
+  instrument_add_note(&instrument2, -12, 0.0001f, 0.001f, 3000, wf_sine);
+  instrument_add_note(&instrument2, -7, 0.0001f, 0.001f, 3000, wf_sine);
+  instrument_add_note(&instrument2, 0, 0.0001f, 0.001f, 3000, wf_sine);
+  instrument_add_note(&instrument2, 0, 0.0001f, 0.001f, 3000, wf_sine);
   return 0;
 }
 
 int32_t mseq_start(callback_func callback) {
-  engine_start(callback);
+  assert(callback != NULL);
+  if (open_stream() < 0)
+    return -1;
+  Pa_StartStream(engine.stream);
+  callback();
   return 0;
 }
 
-int32_t mseq_init(int32_t sample_rate, int32_t frames_per_buffer) {
-  engine_init(-1 /* default device */, sample_rate, frames_per_buffer);
-  return 0;
+void mseq_free() {
+  Pa_Terminate();
 }
