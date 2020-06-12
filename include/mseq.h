@@ -4,6 +4,8 @@
 #define _MSEQ_H
 
 #include "common.h"
+#include "instrument.h"
+#include "waveforms.h"
 
 extern int32_t engine_time;
 

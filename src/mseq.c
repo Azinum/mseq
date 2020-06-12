@@ -95,11 +95,12 @@ int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_
   engine.out_port.suggestedLatency = Pa_GetDeviceInfo(engine.out_port.device)->defaultHighOutputLatency;
   engine.out_port.hostApiSpecificStreamInfo = NULL;
 
-  struct Instrument* ins = mseq_add_instrument();
+  /* struct Instrument* ins = mseq_add_instrument();
   instrument_add_note(ins, 28, 0.000005f, 0.001f, 100, wf_sine);
   instrument_add_note(ins, 28, 0.000005f, 0.001f, 100, wf_sine);
   instrument_add_note(ins, 28, 0.000005f, 0.001f, 100, wf_sine);
   instrument_add_note(ins, 28, 0.000005f, 0.001f, 100, wf_sine);
+  */
   return 0;
 }
 
