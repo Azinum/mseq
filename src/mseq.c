@@ -19,6 +19,10 @@ void args_parse(struct Args* args, int argc, char** argv) {
     if (arg[0] == '-') {
       switch (arg[1]) {
         case 'd': {
+          if (i + 1 >= argc) {
+            fprintf(stderr, "Missing argument\n");
+            break;
+          }
           char* value = argv[i + 1];
           int32_t id = atoi(value);
           args->output_device_id = id;

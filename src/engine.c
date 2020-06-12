@@ -38,7 +38,7 @@ int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frame
   for (int32_t i = 0; i < (int32_t)frames_per_buffer; i++) {
     float frame = 0;
     frame += instrument_process(&instrument);
-      frame += instrument_process(&instrument2);
+    frame += instrument_process(&instrument2);
     *out++ = frame;
     *out++ = frame;
     engine_time++;
@@ -90,7 +90,7 @@ int32_t engine_init(int32_t output_device_id, int32_t sample_rate, int32_t frame
   printf("Avaliable output devices:\n");
   for (int32_t i = 0; i < device_count; i++) {
     const PaDeviceInfo* device_info = Pa_GetDeviceInfo(i);
-    printf("  %s", device_info->name);
+    printf("%-2i | %s", i, device_info->name);
     if (output_device == i)
       printf(" [selected]");
     printf("\n");
@@ -115,8 +115,6 @@ int32_t engine_init(int32_t output_device_id, int32_t sample_rate, int32_t frame
   return 0;
 }
 
-static int32_t note_value = 0;
-
 int32_t engine_start() {
   if (open_stream() < 0)
     return -1;
@@ -133,7 +131,6 @@ int32_t engine_start() {
       printf(">> ");
       scanf("%u", &n);
       instrument_modify_node(&instrument2, 0, NP_VALUE, (Note_property_value) { .i = n });
-      note_value++;
     }
   } while (ch != 'q');
   return 0;
