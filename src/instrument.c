@@ -86,7 +86,7 @@ void instrument_change_note_freq(struct Instrument* ins, int32_t index, int32_t 
   note->note_value = note_value;
 }
   
-int32_t instrument_add_node(struct Instrument* ins, int32_t note_value, float release_speed, float attack_speed, float hold_time, proc_func process_func) {
+int32_t instrument_add_note(struct Instrument* ins, int32_t note_value, float release_speed, float attack_speed, float hold_time, proc_func process_func) {
   assert(ins != NULL);
   int32_t id = ins->seq_node_count;
   if (id >= MAX_SEQ_NODES) {
@@ -101,32 +101,3 @@ int32_t instrument_add_node(struct Instrument* ins, int32_t note_value, float re
   note->process = process_func;
   return id;
 }
-
-// TODO(lucas): Refactor!
-void instrument_modify_node(struct Instrument* ins, int16_t node_id, enum Note_property prop, Note_property_value value) {
-  assert(ins != NULL);
-  assert(node_id >= 0 && node_id < MAX_SEQ_NODES);
-  struct Note_info* note = &ins->seq_table[node_id];
-  assert(note != NULL);
-  switch (prop) {
-    case NP_VALUE:
-      note->note_value = value.i;
-      break;
-    case NP_ATTACK_SPEED:
-      note->attack_speed = value.f;
-      break;
-    case NP_RELEASE_SPEED:
-      note->release_speed = value.f;
-      break;
-    case NP_HOLD_TIME:
-      note->hold_time = value.i;
-      break;
-    case NP_PROCESS:
-      note->process = value.p;
-      break;
-    default:
-      assert(0);
-      break;
-  }
-}
-

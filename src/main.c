@@ -5,5 +5,5 @@
 #include "mseq.h"
 
 int main(int argc, char** argv) {
-  return mseq_start(argc, argv);
+  return mseq_exec(argc, argv);
 }

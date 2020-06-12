@@ -5,6 +5,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "common.h"
 #include "instrument.h"
@@ -102,37 +103,25 @@ int32_t engine_init(int32_t output_device_id, int32_t sample_rate, int32_t frame
   engine.out_port.hostApiSpecificStreamInfo = NULL;
 
   instrument_init(&instrument);
-  instrument_add_node(&instrument, 32, 0.00005f, 0.001f, 100, wf_sine);
-  instrument_add_node(&instrument, 32, 0.00005f, 0.001f, 100, wf_sine);
-  instrument_add_node(&instrument, 32, 0.00005f, 0.001f, 100, wf_sine);
-  instrument_add_node(&instrument, 32, 0.00005f, 0.001f, 100, wf_sine);
+  instrument_add_note(&instrument, 32, 0.00005f, 0.001f, 100, wf_sine);
+  instrument_add_note(&instrument, 32, 0.00005f, 0.001f, 100, wf_sine);
+  instrument_add_note(&instrument, 32, 0.00005f, 0.001f, 100, wf_sine);
+  instrument_add_note(&instrument, 32, 0.00005f, 0.001f, 100, wf_sine);
 
   instrument_init(&instrument2);
-  instrument_add_node(&instrument2, -12, 0.0001f, 0.001f, 3000, wf_sine);
-  instrument_add_node(&instrument2, -7, 0.0001f, 0.001f, 3000, wf_sine);
-  instrument_add_node(&instrument2, 0, 0.0001f, 0.001f, 3000, wf_sine);
-  instrument_add_node(&instrument2, 0, 0.0001f, 0.001f, 3000, wf_sine);
+  instrument_add_note(&instrument2, -12, 0.0001f, 0.001f, 3000, wf_sine);
+  instrument_add_note(&instrument2, -7, 0.0001f, 0.001f, 3000, wf_sine);
+  instrument_add_note(&instrument2, 0, 0.0001f, 0.001f, 3000, wf_sine);
+  instrument_add_note(&instrument2, 0, 0.0001f, 0.001f, 3000, wf_sine);
   return 0;
 }
 
-int32_t engine_start() {
+int32_t engine_start(callback_func callback) {
+  assert(callback != NULL);
   if (open_stream() < 0)
     return -1;
   Pa_StartStream(engine.stream);
-  char ch = 0;
-  do {
-    printf("> ");
-    scanf("%c", &ch);
-    if (ch == 'w') {
-      instrument_modify_node(&instrument, 0, NP_RELEASE_SPEED, (Note_property_value) { .f = 0.00001f });
-    }
-    else if (ch == 'e') {
-      uint32_t n = 0;
-      printf(">> ");
-      scanf("%u", &n);
-      instrument_modify_node(&instrument2, 0, NP_VALUE, (Note_property_value) { .i = n });
-    }
-  } while (ch != 'q');
+  callback();
   return 0;
 }
 
