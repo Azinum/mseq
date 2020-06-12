@@ -15,30 +15,27 @@ enum Note_state {
   STATE_RELEASE,
 };
 
-static int32_t tempo = (60 * 60) / 230;
+static int32_t tempo = (60 * 60) / 360;
 
 static float amp_max = 0.2f;
 
 void instrument_init(struct Instrument* ins) {
-  for (int32_t i = 0; i < BAR_LENGTH; i++)
-    ins->bar_seq[i] = -1;
-  ins->bar_seq[0] = 0;
-  ins->bar_seq[1] = 3;
-  ins->bar_seq[2] = 2;
-  ins->bar_seq[3] = 1;
-  ins->bar_seq[4] = 1;
-  ins->bar_seq[8] = 2;
-  ins->bar_seq[12] = 3;
-
   ins->seq_node_count = 0;
   ins->index = 0;
   ins->step = 0;
+  ins->state = I_ACTIVE;
+  for (int32_t i = 0; i < BAR_LENGTH; i++)
+    ins->bar_seq[i] = -1;
+  ins->bar_seq[0] = 0;
+  ins->bar_seq[4] = 1;
+  ins->bar_seq[8] = 2;
+  ins->bar_seq[12] = 3;
 }
 
 float instrument_process(struct Instrument* ins) {
   float result = 0;
   struct Note_info* current_note = &ins->seq_table[ins->index];
-  if (!(engine_time % (tempo * FRAMES_PER_BUFFER))) {
+  if (!(engine_time % (tempo * mseq_get_frames_per_buffer()))) {
     if (ins->bar_seq[ins->step] >= 0) {
       ins->index = ins->bar_seq[ins->step];
       assert(ins->index < MAX_SEQ_NODES);

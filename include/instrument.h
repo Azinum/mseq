@@ -10,20 +10,6 @@
 #define BAR_LENGTH 16
 #define MAX_SEQ_NODES 8
 
-enum Note_property {
-  NP_VALUE = 1,
-  NP_RELEASE_SPEED,
-  NP_ATTACK_SPEED,
-  NP_HOLD_TIME,
-  NP_PROCESS
-};
-
-typedef union Note_property_value {
-  float f;
-  int32_t i;
-  void* p;
-} Note_property_value;
-
 typedef float (*proc_func)(float, float);
 
 struct Note_info {
@@ -38,12 +24,18 @@ struct Note_info {
   proc_func process;
 };
 
+enum Instrument_state {
+  I_INACTIVE = 0,
+  I_ACTIVE
+};
+
 struct Instrument {
   struct Note_info seq_table[MAX_SEQ_NODES];
   int16_t bar_seq[BAR_LENGTH];
   int16_t seq_node_count;
   int16_t index;
   int16_t step;
+  int16_t state;
 };
 
 void instrument_init(struct Instrument* ins);

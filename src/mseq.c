@@ -12,48 +12,41 @@
 #include "waveforms.h"
 #include "mseq.h"
 
+#define MAX_INSTRUMENTS 4
+
 typedef struct Engine {
   int32_t sample_rate;
   int32_t frames_per_buffer;
   PaStream* stream;
   PaStreamParameters in_port, out_port;
+  struct Instrument instruments[MAX_INSTRUMENTS];
+  int32_t instrument_count;
 } Engine;
 
 int32_t engine_time = 0;
 
 static Engine engine;
 
-struct Instrument instrument;
-struct Instrument instrument2;
-
 static int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data);
 static int32_t open_stream();
 
 int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data) {
   float* out = (float*)out_buff;
-  (void)in_buff;
-  (void)time_info;
-  (void)flags;
-  (void)user_data;
+  (void)in_buff; (void)time_info; (void)flags; (void)user_data;
 
   for (int32_t i = 0; i < (int32_t)frames_per_buffer; i++) {
     float frame = 0;
-    frame += instrument_process(&instrument);
-    frame += instrument_process(&instrument2);
+    for (int32_t j = 0; j < MAX_INSTRUMENTS; j++) {
+      struct Instrument* ins = &engine.instruments[j];
+      if (ins->state == I_ACTIVE)
+        frame += instrument_process(ins);
+    }
     *out++ = frame;
     *out++ = frame;
     engine_time++;
   }
-  /*int32_t note_value = (!(rand() % 2)) ? 5 : 7;
-  note_value *= (rand() % 4) + 1;
-  int32_t r = rand() % 50;
-  int32_t i = rand() % 4;
-  if (!r)
-    instrument_change_note_freq(&instrument, i, note_value);
-  */
   return paContinue;
 }
-
 
 int32_t open_stream() {
   PaError err = Pa_OpenStream(
@@ -102,22 +95,28 @@ int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_
   engine.out_port.suggestedLatency = Pa_GetDeviceInfo(engine.out_port.device)->defaultHighOutputLatency;
   engine.out_port.hostApiSpecificStreamInfo = NULL;
 
-  instrument_init(&instrument);
-  instrument_add_note(&instrument, 32, 0.00005f, 0.001f, 100, wf_sine);
-  instrument_add_note(&instrument, 32, 0.00005f, 0.001f, 100, wf_sine);
-  instrument_add_note(&instrument, 32, 0.00005f, 0.001f, 100, wf_sine);
-  instrument_add_note(&instrument, 32, 0.00005f, 0.001f, 100, wf_sine);
-
-  instrument_init(&instrument2);
-  instrument_add_note(&instrument2, -12, 0.0001f, 0.001f, 3000, wf_sine);
-  instrument_add_note(&instrument2, -7, 0.0001f, 0.001f, 3000, wf_sine);
-  instrument_add_note(&instrument2, 0, 0.0001f, 0.001f, 3000, wf_sine);
-  instrument_add_note(&instrument2, 0, 0.0001f, 0.001f, 3000, wf_sine);
+  struct Instrument* ins = mseq_add_instrument();
+  instrument_add_note(ins, 28, 0.000005f, 0.001f, 100, wf_sine);
+  instrument_add_note(ins, 28, 0.000005f, 0.001f, 100, wf_sine);
+  instrument_add_note(ins, 28, 0.000005f, 0.001f, 100, wf_sine);
+  instrument_add_note(ins, 28, 0.000005f, 0.001f, 100, wf_sine);
   return 0;
+}
+
+struct Instrument* mseq_add_instrument() {
+  assert(engine.instrument_count < MAX_INSTRUMENTS);
+  struct Instrument* ins = &engine.instruments[engine.instrument_count++];
+  assert(ins != NULL);
+  instrument_init(ins);
+  return ins;
 }
 
 int32_t mseq_get_sample_rate() {
   return engine.sample_rate;
+}
+
+int32_t mseq_get_frames_per_buffer() {
+  return engine.frames_per_buffer;
 }
 
 int32_t mseq_start(callback_func callback) {

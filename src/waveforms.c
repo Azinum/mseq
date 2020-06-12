@@ -16,13 +16,13 @@ float saw(float n) {
 }
 
 inline float wf_sine(float amp, float freq) {
-  return amp * sin(2 * PI32 * engine_time / (mseq_get_sample_rate() / freq));
+  return amp * sin((engine_time * freq * 2 * PI32) / mseq_get_sample_rate());
 }
 
 inline float wf_square(float amp, float freq) {
-  return amp * sign(sin(2 * PI32 * engine_time / (mseq_get_sample_rate() / freq)));
+  return amp * sign(sin((engine_time * freq * 2 * PI32) / mseq_get_sample_rate()));
 }
 
 inline float wf_saw(float amp, float freq) {
-  return amp * saw(sin(2 * PI32 * engine_time / (mseq_get_sample_rate() / freq)));
+  return amp * saw(sin((engine_time * freq * 2 * PI32) / mseq_get_sample_rate()));
 }
