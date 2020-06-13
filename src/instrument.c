@@ -26,10 +26,10 @@ void instrument_init(struct Instrument* ins) {
   ins->state = I_ACTIVE;
   for (int32_t i = 0; i < BAR_LENGTH; i++)
     ins->bar_seq[i] = -1;
-  ins->bar_seq[0] = 0;
+  /* ins->bar_seq[0] = 0;
   ins->bar_seq[4] = 1;
   ins->bar_seq[8] = 2;
-  ins->bar_seq[12] = 3;
+  ins->bar_seq[12] = 3; */
 }
 
 float instrument_process(struct Instrument* ins) {
@@ -38,6 +38,7 @@ float instrument_process(struct Instrument* ins) {
   if (!(engine_time % (tempo * mseq_get_frames_per_buffer()))) {
     if (ins->bar_seq[ins->step] >= 0) {
       ins->index = ins->bar_seq[ins->step];
+      current_note = &ins->seq_table[ins->index];
       assert(ins->index < MAX_SEQ_NODES);
       current_note->freq = NOTE_FREQ(current_note->note_value);
       current_note->state = STATE_ATTACK;
