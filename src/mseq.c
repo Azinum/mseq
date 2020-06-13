@@ -32,12 +32,10 @@ static Engine engine;
 static int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data);
 static int32_t open_stream();
 
-// - Tempo (fixa timings och ge möjlighet att ändra tempo)
-// - Tap grej
-// - Conn grej
 int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data) {
   float* out = (float*)out_buff;
   (void)in_buff; (void)time_info; (void)flags; (void)user_data;
+  float gain = 302.0f;
   for (int32_t i = 0; i < (int32_t)frames_per_buffer; i++) {
     float frame = 0;
     if (!engine.is_playing) {
@@ -50,6 +48,9 @@ int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frame
       if (ins->state == I_ACTIVE)
         frame += instrument_process(ins);
     }
+    frame *= gain;
+    if (frame >= 1.0f)
+      frame = 1.0f;
     *out++ = frame;
     *out++ = frame;
     engine_time++;
