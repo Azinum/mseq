@@ -42,6 +42,10 @@ float instrument_process(struct Instrument* ins) {
       current_note->freq = NOTE_FREQ(current_note->note_value);
       current_note->state = STATE_ATTACK;
       current_note->amp = 0;
+      if (engine_time > (512 * 128)) {
+        puts("engine_time set to 0");
+        engine_time = 0;
+      }
     }
     ins->step = (ins->step + 1) % BAR_LENGTH;
   }
