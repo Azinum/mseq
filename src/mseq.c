@@ -21,6 +21,7 @@ typedef struct Engine {
   PaStreamParameters in_port, out_port;
   struct Instrument instruments[MAX_INSTRUMENTS];
   int32_t instrument_count;
+  uint8_t is_playing;
 } Engine;
 
 int32_t engine_time = 0;
@@ -31,12 +32,19 @@ static Engine engine;
 static int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data);
 static int32_t open_stream();
 
+// - TEMPO (fixa timings och ge möjlighet att ändra tempo)
+// - PLAY/PAUSE
+// - TAP GREJ
 int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data) {
   float* out = (float*)out_buff;
   (void)in_buff; (void)time_info; (void)flags; (void)user_data;
-
   for (int32_t i = 0; i < (int32_t)frames_per_buffer; i++) {
     float frame = 0;
+    if (!engine.is_playing) {
+      *out++ = 0;
+      *out++ = 0;
+      continue;
+    }
     for (int32_t j = 0; j < MAX_INSTRUMENTS; j++) {
       struct Instrument* ins = &engine.instruments[j];
       if (ins->state == I_ACTIVE)
@@ -78,7 +86,7 @@ int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_
   }
   engine.sample_rate = sample_rate;
   engine.frames_per_buffer = frames_per_buffer;
-
+  engine.is_playing = 1;
   int32_t device_count = Pa_GetDeviceCount();
   int32_t output_device = output_device_id % device_count;
   if (output_device_id < 0)
@@ -97,12 +105,17 @@ int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_
   engine.out_port.suggestedLatency = Pa_GetDeviceInfo(engine.out_port.device)->defaultHighOutputLatency;
   engine.out_port.hostApiSpecificStreamInfo = NULL;
 
-  struct Instrument* ins = mseq_add_instrument();
+  /*struct Instrument* ins = mseq_add_instrument();
   instrument_add_note(ins, 28, 0.000005f, 0.001f, 100, wf_sine);
   instrument_add_note(ins, 28, 0.000005f, 0.001f, 100, wf_sine);
   instrument_add_note(ins, 28, 0.000005f, 0.001f, 100, wf_sine);
   instrument_add_note(ins, 28, 0.000005f, 0.001f, 100, wf_sine);
+  */
   return 0;
+}
+
+void mseq_toggle_play() {
+  engine.is_playing = !engine.is_playing;
 }
 
 struct Instrument* mseq_add_instrument() {

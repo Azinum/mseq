@@ -12,6 +12,8 @@ extern int32_t engine_tick;
 
 int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_per_buffer);
 
+void mseq_toggle_play();
+
 struct Instrument* mseq_add_instrument();
 
 int32_t mseq_get_sample_rate();
