@@ -44,6 +44,8 @@ float instrument_process(struct Instrument* ins);
 
 void instrument_change_note_freq(struct Instrument* ins, int32_t index, int32_t note_value);
 
+void instrument_connect_note(struct Instrument* ins, int32_t location, int32_t id);
+
 int32_t instrument_add_note(struct Instrument* ins, int32_t note_value, float release_speed, float attack_speed, float hold_time, proc_func process_func);
 
 #endif
