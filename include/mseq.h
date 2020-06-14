@@ -8,7 +8,6 @@
 #include "waveforms.h"
 
 extern int32_t engine_time;
-extern int32_t engine_tick;
 extern uint8_t engine_is_playing;
 
 int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_per_buffer);

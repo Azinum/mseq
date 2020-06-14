@@ -9,4 +9,6 @@ extern float wf_square(float amp, float freq);
 
 extern float wf_saw(float amp, float freq);
 
+extern float wf_triangle(float amp, float freq);
+
 #endif

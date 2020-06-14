@@ -42,8 +42,6 @@ float instrument_process(struct Instrument* ins) {
     if (ins->bar_seq[ins->step] >= 0) {
       ins->index = ins->bar_seq[ins->step];
       instrument_play_note(ins, ins->index);
-      if (engine_time >= (512 * 128))
-        engine_time = 0;
     }
     ins->step = (ins->step + 1) % BAR_LENGTH;
   }

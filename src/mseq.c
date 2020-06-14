@@ -25,18 +25,17 @@ typedef struct Engine {
 } Engine;
 
 int32_t engine_time = 0;
-int32_t engine_tick = 0;
 uint8_t engine_is_playing = 1;
 
 static Engine engine;
 
 static int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data);
 static int32_t open_stream();
-static float dist_mix = 0.0f;
 
 int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data) {
   float* out = (float*)out_buff;
   (void)in_buff; (void)time_info; (void)flags; (void)user_data;
+  
   for (int32_t i = 0; i < (int32_t)frames_per_buffer; i++) {
     float frame = 0;
     for (int32_t j = 0; j < MAX_INSTRUMENTS; j++) {
@@ -44,16 +43,10 @@ int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frame
       if (ins->state == I_ACTIVE)
         frame += instrument_process(ins);
     }
-    frame = effect_distortion(frame, dist_mix, 10.0f);
-    frame = effect_bitcrush(frame, 0.5f, 500);
     *out++ = frame;
     *out++ = frame;
     engine_time++;
-    engine_tick++;
   }
-  dist_mix += 0.005f;
-  if (dist_mix >= 1.0f)
-    dist_mix = 0.0f;
   return paContinue;
 }
 
@@ -86,6 +79,15 @@ int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_
   engine.sample_rate = sample_rate;
   engine.frames_per_buffer = frames_per_buffer;
 
+/*
+  engine.in_port.device = Pa_GetDefaultInputDevice();
+  engine.in_port.channelCount = 1;
+  engine.in_port.sampleFormat = paFloat32;
+  engine.in_port.suggestedLatency = 0; // Pa_GetDeviceInfo(engine.in_port.device)->defaultLowInputLatency;
+  engine.in_port.hostApiSpecificStreamInfo = NULL;
+
+  printf("Input latency: %.6g\n", engine.in_port.suggestedLatency);
+*/
   int32_t device_count = Pa_GetDeviceCount();
   int32_t output_device = output_device_id % device_count;
   if (output_device_id < 0)
@@ -106,10 +108,10 @@ int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_
 
 #if !defined(COMP_SHARED_LIB)
   struct Instrument* ins = mseq_add_instrument();
-  instrument_add_note(ins, 0, 0.00001f, 0.0001f, 1000, wf_sine);
-  instrument_add_note(ins, 5, 0.00001f, 0.0001f, 1000, wf_sine);
-  instrument_add_note(ins, 12, 0.00001f, 0.0001f, 1000, wf_sine);
-  instrument_add_note(ins, 24, 0.00001f, 0.0001f, 1000, wf_sine);
+  instrument_add_note(ins, 0, 0.00001f, 0.0001f, 1000, wf_triangle);
+  instrument_add_note(ins, 5, 0.00001f, 0.0001f, 1000, wf_triangle);
+  instrument_add_note(ins, 12, 0.00001f, 0.0001f, 1000, wf_triangle);
+  instrument_add_note(ins, 24, 0.00001f, 0.0001f, 1000, wf_triangle);
   instrument_connect_note(ins, 0, 0);
   instrument_connect_note(ins, 4, 1);
   instrument_connect_note(ins, 8, 2);
