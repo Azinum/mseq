@@ -21,11 +21,11 @@ typedef struct Engine {
   PaStreamParameters in_port, out_port;
   struct Instrument instruments[MAX_INSTRUMENTS];
   int32_t instrument_count;
-  uint8_t is_playing;
 } Engine;
 
 int32_t engine_time = 0;
 int32_t engine_tick = 0;
+uint8_t engine_is_playing = 1;
 
 static Engine engine;
 
@@ -35,22 +35,13 @@ static int32_t open_stream();
 int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data) {
   float* out = (float*)out_buff;
   (void)in_buff; (void)time_info; (void)flags; (void)user_data;
-  float gain = 302.0f;
   for (int32_t i = 0; i < (int32_t)frames_per_buffer; i++) {
     float frame = 0;
-    if (!engine.is_playing) {
-      *out++ = 0;
-      *out++ = 0;
-      continue;
-    }
     for (int32_t j = 0; j < MAX_INSTRUMENTS; j++) {
       struct Instrument* ins = &engine.instruments[j];
       if (ins->state == I_ACTIVE)
         frame += instrument_process(ins);
     }
-    frame *= gain;
-    if (frame >= 1.0f)
-      frame = 1.0f;
     *out++ = frame;
     *out++ = frame;
     engine_time++;
@@ -87,7 +78,7 @@ int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_
   }
   engine.sample_rate = sample_rate;
   engine.frames_per_buffer = frames_per_buffer;
-  engine.is_playing = 1;
+
   int32_t device_count = Pa_GetDeviceCount();
   int32_t output_device = output_device_id % device_count;
   if (output_device_id < 0)
@@ -106,16 +97,21 @@ int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_
   engine.out_port.suggestedLatency = Pa_GetDeviceInfo(engine.out_port.device)->defaultHighOutputLatency;
   engine.out_port.hostApiSpecificStreamInfo = NULL;
 
+#if !defined(COMP_SHARED_LIB)
   struct Instrument* ins = mseq_add_instrument();
-  instrument_add_note(ins, 28, 0.000005f, 0.001f, 100, wf_sine);
-  instrument_add_note(ins, 28, 0.000005f, 0.001f, 100, wf_sine);
-  instrument_add_note(ins, 28, 0.000005f, 0.001f, 100, wf_sine);
-  instrument_add_note(ins, 28, 0.000005f, 0.001f, 100, wf_sine);
+  instrument_add_note(ins, 12, 0.000005f, 0.001f, 100, wf_sine);
+  instrument_add_note(ins, 15, 0.000005f, 0.001f, 100, wf_sine);
+  instrument_add_note(ins, 17, 0.000005f, 0.001f, 100, wf_sine);
+  instrument_add_note(ins, 19, 0.000005f, 0.001f, 100, wf_sine);
+  instrument_connect_note(ins, 4, 1);
+  instrument_connect_note(ins, 8, 2);
+  instrument_connect_note(ins, 12, 3);
+#endif
   return 0;
 }
 
 void mseq_toggle_play() {
-  engine.is_playing = !engine.is_playing;
+  engine_is_playing = !engine_is_playing;
 }
 
 struct Instrument* mseq_add_instrument() {

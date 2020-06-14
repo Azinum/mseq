@@ -26,24 +26,23 @@ void instrument_init(struct Instrument* ins) {
   ins->state = I_ACTIVE;
   for (int32_t i = 0; i < BAR_LENGTH; i++)
     ins->bar_seq[i] = -1;
-  /* ins->bar_seq[0] = 0;
-  ins->bar_seq[4] = 1;
-  ins->bar_seq[8] = 2;
-  ins->bar_seq[12] = 3; */
+}
+
+void instrument_play_note(struct Instrument* ins, int16_t id) {
+  assert(id >= 0 && id < MAX_SEQ_NODES);
+  struct Note_info* note = &ins->seq_table[id];
+  note->freq = NOTE_FREQ(note->note_value);
+  note->state = STATE_ATTACK;
+  note->amp = 0;
 }
 
 float instrument_process(struct Instrument* ins) {
   float result = 0;
-  struct Note_info* current_note = &ins->seq_table[ins->index];
-  if (!(engine_time % (tempo * mseq_get_frames_per_buffer()))) {
+  if (!(engine_time % (tempo * mseq_get_frames_per_buffer())) && engine_is_playing) {
     if (ins->bar_seq[ins->step] >= 0) {
       ins->index = ins->bar_seq[ins->step];
-      current_note = &ins->seq_table[ins->index];
-      assert(ins->index < MAX_SEQ_NODES);
-      current_note->freq = NOTE_FREQ(current_note->note_value);
-      current_note->state = STATE_ATTACK;
-      current_note->amp = 0;
-      if (engine_time > (512 * 128))
+      instrument_play_note(ins, ins->index);
+      if (engine_time >= (512 * 128))
         engine_time = 0;
     }
     ins->step = (ins->step + 1) % BAR_LENGTH;

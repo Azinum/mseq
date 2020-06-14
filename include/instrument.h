@@ -40,6 +40,8 @@ struct Instrument {
 
 void instrument_init(struct Instrument* ins);
 
+void instrument_play_note(struct Instrument* ins, int16_t id);
+
 float instrument_process(struct Instrument* ins);
 
 void instrument_change_note_freq(struct Instrument* ins, int32_t index, int32_t note_value);
