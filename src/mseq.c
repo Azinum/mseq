@@ -32,6 +32,15 @@ static Engine engine;
 static int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data);
 static int32_t open_stream();
 
+float bitcrush(float input, float mix, int32_t amount) {
+  float result = 0;
+  int8_t crush = (int8_t)(amount * input);
+  result = crush / (float)amount;
+  float dry = 1 - mix;
+  float wet = 1 - dry;
+  return (input * dry ) + (result * wet);
+}
+
 int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data) {
   float* out = (float*)out_buff;
   (void)in_buff; (void)time_info; (void)flags; (void)user_data;
@@ -42,6 +51,7 @@ int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frame
       if (ins->state == I_ACTIVE)
         frame += instrument_process(ins);
     }
+    frame = bitcrush(frame, 0.8f, 1000);
     *out++ = frame;
     *out++ = frame;
     engine_time++;
@@ -99,10 +109,11 @@ int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_
 
 #if !defined(COMP_SHARED_LIB)
   struct Instrument* ins = mseq_add_instrument();
-  instrument_add_note(ins, 12, 0.000005f, 0.001f, 100, wf_sine);
-  instrument_add_note(ins, 15, 0.000005f, 0.001f, 100, wf_sine);
-  instrument_add_note(ins, 17, 0.000005f, 0.001f, 100, wf_sine);
-  instrument_add_note(ins, 19, 0.000005f, 0.001f, 100, wf_sine);
+  instrument_add_note(ins, 12, 0.00001f, 0.001f, 100, wf_sine);
+  instrument_add_note(ins, 15, 0.00001f, 0.001f, 100, wf_sine);
+  instrument_add_note(ins, 17, 0.00001f, 0.001f, 100, wf_sine);
+  instrument_add_note(ins, 19, 0.00001f, 0.001f, 100, wf_sine);
+  instrument_connect_note(ins, 0, 0);
   instrument_connect_note(ins, 4, 1);
   instrument_connect_note(ins, 8, 2);
   instrument_connect_note(ins, 12, 3);
@@ -117,7 +128,6 @@ void mseq_toggle_play() {
 struct Instrument* mseq_add_instrument() {
   assert(engine.instrument_count < MAX_INSTRUMENTS);
   struct Instrument* ins = &engine.instruments[engine.instrument_count++];
-  assert(ins != NULL);
   instrument_init(ins);
   return ins;
 }

@@ -15,7 +15,7 @@ enum Note_state {
   STATE_RELEASE,
 };
 
-static int32_t tempo = (60 * 60) / 600;
+static int32_t tempo = (60 * 60 * 60) / 120;
 
 static float amp_max = 0.2f;
 
@@ -38,7 +38,7 @@ void instrument_play_note(struct Instrument* ins, int16_t id) {
 
 float instrument_process(struct Instrument* ins) {
   float result = 0;
-  if (!(engine_time % (tempo * mseq_get_frames_per_buffer())) && engine_is_playing) {
+  if (!(engine_time % tempo) && engine_is_playing) {
     if (ins->bar_seq[ins->step] >= 0) {
       ins->index = ins->bar_seq[ins->step];
       instrument_play_note(ins, ins->index);
