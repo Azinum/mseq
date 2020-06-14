@@ -10,6 +10,7 @@
 #include "common.h"
 #include "instrument.h"
 #include "waveforms.h"
+#include "effect.h"
 #include "mseq.h"
 
 #define MAX_INSTRUMENTS 4
@@ -31,15 +32,7 @@ static Engine engine;
 
 static int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data);
 static int32_t open_stream();
-
-float bitcrush(float input, float mix, int32_t amount) {
-  float result = 0;
-  int8_t crush = (int8_t)(amount * input);
-  result = crush / (float)amount;
-  float dry = 1 - mix;
-  float wet = 1 - dry;
-  return (input * dry ) + (result * wet);
-}
+static float dist_mix = 0.0f;
 
 int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data) {
   float* out = (float*)out_buff;
@@ -51,12 +44,16 @@ int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frame
       if (ins->state == I_ACTIVE)
         frame += instrument_process(ins);
     }
-    frame = bitcrush(frame, 0.8f, 1000);
+    frame = effect_distortion(frame, dist_mix, 10.0f);
+    frame = effect_bitcrush(frame, 0.5f, 500);
     *out++ = frame;
     *out++ = frame;
     engine_time++;
     engine_tick++;
   }
+  dist_mix += 0.005f;
+  if (dist_mix >= 1.0f)
+    dist_mix = 0.0f;
   return paContinue;
 }
 
@@ -109,10 +106,10 @@ int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_
 
 #if !defined(COMP_SHARED_LIB)
   struct Instrument* ins = mseq_add_instrument();
-  instrument_add_note(ins, 12, 0.00001f, 0.001f, 100, wf_sine);
-  instrument_add_note(ins, 15, 0.00001f, 0.001f, 100, wf_sine);
-  instrument_add_note(ins, 17, 0.00001f, 0.001f, 100, wf_sine);
-  instrument_add_note(ins, 19, 0.00001f, 0.001f, 100, wf_sine);
+  instrument_add_note(ins, 0, 0.00001f, 0.0001f, 1000, wf_sine);
+  instrument_add_note(ins, 5, 0.00001f, 0.0001f, 1000, wf_sine);
+  instrument_add_note(ins, 12, 0.00001f, 0.0001f, 1000, wf_sine);
+  instrument_add_note(ins, 24, 0.00001f, 0.0001f, 1000, wf_sine);
   instrument_connect_note(ins, 0, 0);
   instrument_connect_note(ins, 4, 1);
   instrument_connect_note(ins, 8, 2);
