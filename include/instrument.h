@@ -41,8 +41,8 @@ struct Instrument {
   int16_t bar_seq[BAR_LENGTH];
   int16_t seq_node_count;
   int16_t index;
-  int16_t step;
   int16_t state;
+  float time;
 };
 
 void instrument_init(struct Instrument* ins);

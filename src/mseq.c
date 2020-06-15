@@ -7,6 +7,9 @@
 #include <assert.h>
 #include <time.h>
 
+// Linux/Unix/Mac specific time measurements
+#include <sys/time.h>
+
 #include "common.h"
 #include "instrument.h"
 #include "waveforms.h"
@@ -14,6 +17,7 @@
 #include "mseq.h"
 
 Engine engine;
+static struct timeval old, new;
 
 static int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data);
 static int32_t open_stream();
@@ -21,10 +25,10 @@ static int32_t open_stream();
 int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data) {
   float* out = (float*)out_buff;
   (void)in_buff; (void)time_info; (void)flags; (void)user_data;
-  clock_t begin = clock();
-  float frame = 0;
+  double elapsed_time;
+  old = new;
   for (int32_t i = 0; i < (int32_t)frames_per_buffer; i++) {
-    frame = 0;
+    float frame = 0;
     for (int32_t j = 0; j < MAX_INSTRUMENTS; j++) {
       struct Instrument* ins = &engine.instruments[j];
       if (ins->state == I_ACTIVE)
@@ -34,8 +38,14 @@ int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frame
     *out++ = frame;
     engine.tick++;
   }
-  clock_t end = clock();
-  engine.delta_time = (double)(end - begin) / CLOCKS_PER_SEC;
+  
+  gettimeofday(&new, NULL);
+  elapsed_time = (new.tv_sec - old.tv_sec) * 1000.0f;
+  elapsed_time += (new.tv_usec - old.tv_usec) / 1000.0f;
+  engine.delta_time = elapsed_time / 1000.0f;
+  if (engine.delta_time >= 0.1f)
+    engine.delta_time = 0.1f;
+  engine.time += engine.delta_time;
   return paContinue;
 }
 
@@ -69,6 +79,7 @@ int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_
   engine.frames_per_buffer = frames_per_buffer;
   engine.tick = 0;
   engine.delta_time = 0;
+  engine.time = 0;
   engine.is_playing = 1;
 
   int32_t device_count = Pa_GetDeviceCount();
@@ -91,10 +102,10 @@ int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_
 
 #if !defined(COMP_SHARED_LIB)
   struct Instrument* ins = mseq_add_instrument();
-  instrument_add_note(ins, 0, 0.00001f, 0.0001f, 1000, OSC_SINE);
-  instrument_add_note(ins, 5, 0.00001f, 0.0001f, 1000, OSC_SINE);
-  instrument_add_note(ins, 12, 0.00001f, 0.0001f, 1000, OSC_SINE);
-  instrument_add_note(ins, 24, 0.00001f, 0.0001f, 1000, OSC_SINE);
+  instrument_add_note(ins, 0, 0.00005f, 0.01f, 100, OSC_SINE);
+  instrument_add_note(ins, 5, 0.00005f, 0.01f, 100, OSC_SINE);
+  instrument_add_note(ins, 12, 0.00005f, 0.01f, 100, OSC_SINE);
+  instrument_add_note(ins, 24, 0.00005f, 0.01f, 100, OSC_SINE);
   instrument_connect_note(ins, 0, 0);
   instrument_connect_note(ins, 4, 1);
   instrument_connect_note(ins, 8, 2);
