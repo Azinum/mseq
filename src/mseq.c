@@ -22,8 +22,9 @@ int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frame
   float* out = (float*)out_buff;
   (void)in_buff; (void)time_info; (void)flags; (void)user_data;
   clock_t begin = clock();
+  float frame = 0;
   for (int32_t i = 0; i < (int32_t)frames_per_buffer; i++) {
-    float frame = 0;
+    frame = 0;
     for (int32_t j = 0; j < MAX_INSTRUMENTS; j++) {
       struct Instrument* ins = &engine.instruments[j];
       if (ins->state == I_ACTIVE)

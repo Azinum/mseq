@@ -21,3 +21,17 @@ inline float effect_distortion(float input, float mix, float amount) {
     result = 1.0f / amount;
   return (input * dry) + (result * wet);
 }
+
+inline float effect_distortion2(float input, float mix, float threshold, float amount) {
+  float result = input;
+  float dry = 1 - mix;
+  float wet = 1 - dry;
+  if (input >= 0.0f) {
+    result = fmin(input, threshold);
+  }
+  else {
+    result = fmax(input, -threshold);
+  }
+  result /= threshold / amount;
+  return (input * dry) + (result * wet);
+}
