@@ -31,6 +31,7 @@ void instrument_init(struct Instrument* ins) {
 void instrument_play_note(struct Instrument* ins, int16_t id) {
   assert(id >= 0 && id < MAX_SEQ_NODES);
   struct Note_info* note = &ins->seq_table[id];
+  note->freq = NOTE_FREQ(note->note_value);
   note->state = STATE_ATTACK;
   note->amp = 0;
 }
@@ -90,12 +91,17 @@ float instrument_process(struct Instrument* ins) {
 
 void instrument_change_note_freq(struct Instrument* ins, int32_t id, int32_t note_value) {
   struct Note_info* note = &ins->seq_table[id];
-  note->freq = NOTE_FREQ(note_value);
+  note->note_value = note_value;
 }
 
 void instrument_change_attack(struct Instrument* ins, int32_t id, float value) {
   struct Note_info* note = &ins->seq_table[id];
   note->attack_speed = value;
+}
+
+void instrument_change_osc(struct Instrument* ins, int32_t id, Oscillator osc_type) {
+  struct Note_info* note = &ins->seq_table[id];
+  note->osc_type = osc_type;
 }
 
 void instrument_connect_note(struct Instrument* ins, int32_t location, int32_t id) {
@@ -113,6 +119,7 @@ int32_t instrument_add_note(struct Instrument* ins, int32_t note_value, float re
     return -1;
   }
   struct Note_info* note = &ins->seq_table[ins->seq_node_count++];
+  note->note_value = note_value;
   note->freq = NOTE_FREQ(note_value);
   note->release_speed = release_speed;
   note->attack_speed = attack_speed;
