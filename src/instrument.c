@@ -38,7 +38,7 @@ void instrument_play_note(struct Instrument* ins, int16_t id) {
 
 float instrument_process(struct Instrument* ins) {
   float result = 0;
-  if (!(engine_time % tempo) && engine_is_playing) {
+  if (!(engine.tick % tempo) && engine.is_playing) {
     if (ins->bar_seq[ins->step] >= 0) {
       ins->index = ins->bar_seq[ins->step];
       instrument_play_note(ins, ins->index);
@@ -53,12 +53,12 @@ float instrument_process(struct Instrument* ins) {
         if (note->amp > amp_max) {
           note->amp = amp_max;
           note->state = STATE_HOLD;
-          note->time = engine_time;
+          note->time = engine.tick;
         }
         break;
       }
       case STATE_HOLD: {
-        if (note->time + note->hold_time < engine_time)
+        if (note->time + note->hold_time < engine.tick)
           note->state = STATE_RELEASE;
         break;
       }
