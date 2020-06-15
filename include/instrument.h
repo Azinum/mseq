@@ -12,16 +12,22 @@
 
 typedef float (*proc_func)(float, float);
 
+typedef enum Oscillator {
+  OSC_SINE,
+  OSC_TRIANGLE,
+  OSC_SQUARE,
+  OSC_SAW,
+} Oscillator;
+
 struct Note_info {
   float freq;
-  int32_t note_value;
   float amp;
   float release_speed;
   float attack_speed;
   int32_t hold_time;
   int32_t time;
   int32_t state;
-  proc_func process;
+  Oscillator osc_type;
 };
 
 enum Instrument_state {
@@ -50,6 +56,6 @@ void instrument_change_attack(struct Instrument* ins, int32_t id, float value);
 
 void instrument_connect_note(struct Instrument* ins, int32_t location, int32_t id);
 
-int32_t instrument_add_note(struct Instrument* ins, int32_t note_value, float release_speed, float attack_speed, float hold_time, proc_func process_func);
+int32_t instrument_add_note(struct Instrument* ins, int32_t note_value, float release_speed, float attack_speed, float hold_time, Oscillator osc_type);
 
 #endif

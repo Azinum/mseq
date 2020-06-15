@@ -91,10 +91,10 @@ int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_
 
 #if !defined(COMP_SHARED_LIB)
   struct Instrument* ins = mseq_add_instrument();
-  instrument_add_note(ins, 0, 0.00001f, 0.0001f, 1000, wf_sine);
-  instrument_add_note(ins, 5, 0.00001f, 0.0001f, 1000, wf_sine);
-  instrument_add_note(ins, 12, 0.00001f, 0.0001f, 1000, wf_sine);
-  instrument_add_note(ins, 24, 0.00001f, 0.0001f, 1000, wf_sine);
+  instrument_add_note(ins, 0, 0.00001f, 0.0001f, 1000, OSC_SINE);
+  instrument_add_note(ins, 5, 0.00001f, 0.0001f, 1000, OSC_SINE);
+  instrument_add_note(ins, 12, 0.00001f, 0.0001f, 1000, OSC_SINE);
+  instrument_add_note(ins, 24, 0.00001f, 0.0001f, 1000, OSC_SINE);
   instrument_connect_note(ins, 0, 0);
   instrument_connect_note(ins, 4, 1);
   instrument_connect_note(ins, 8, 2);

@@ -31,7 +31,6 @@ void instrument_init(struct Instrument* ins) {
 void instrument_play_note(struct Instrument* ins, int16_t id) {
   assert(id >= 0 && id < MAX_SEQ_NODES);
   struct Note_info* note = &ins->seq_table[id];
-  note->freq = NOTE_FREQ(note->note_value);
   note->state = STATE_ATTACK;
   note->amp = 0;
 }
@@ -71,15 +70,27 @@ float instrument_process(struct Instrument* ins) {
       default:
         break;
     }
-    if (note->process != NULL)
-      result += note->process(note->amp, note->freq);
+    switch (note->osc_type) {
+      case OSC_SINE:
+        result += wf_sine(note->amp, note->freq);
+        break;
+      case OSC_TRIANGLE:
+        result += wf_triangle(note->amp, note->freq);
+        break;
+      case OSC_SQUARE:
+        result += wf_square(note->amp, note->freq);
+        break;
+      case OSC_SAW:
+        result += wf_saw(note->amp, note->freq);
+        break;
+    }
   }
   return result;
 }
 
 void instrument_change_note_freq(struct Instrument* ins, int32_t id, int32_t note_value) {
   struct Note_info* note = &ins->seq_table[id];
-  note->note_value = note_value;
+  note->freq = NOTE_FREQ(note_value);
 }
 
 void instrument_change_attack(struct Instrument* ins, int32_t id, float value) {
@@ -94,7 +105,7 @@ void instrument_connect_note(struct Instrument* ins, int32_t location, int32_t i
   ins->bar_seq[location] = id;
 }
 
-int32_t instrument_add_note(struct Instrument* ins, int32_t note_value, float release_speed, float attack_speed, float hold_time, proc_func process_func) {
+int32_t instrument_add_note(struct Instrument* ins, int32_t note_value, float release_speed, float attack_speed, float hold_time, Oscillator osc_type) {
   assert(ins != NULL);
   int32_t id = ins->seq_node_count;
   if (id >= MAX_SEQ_NODES) {
@@ -102,10 +113,10 @@ int32_t instrument_add_note(struct Instrument* ins, int32_t note_value, float re
     return -1;
   }
   struct Note_info* note = &ins->seq_table[ins->seq_node_count++];
-  note->note_value = note_value;
+  note->freq = NOTE_FREQ(note_value);
   note->release_speed = release_speed;
   note->attack_speed = attack_speed;
   note->hold_time = hold_time;
-  note->process = process_func;
+  note->osc_type = osc_type;
   return id;
 }
