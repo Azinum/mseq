@@ -77,9 +77,14 @@ float instrument_process(struct Instrument* ins) {
   return result;
 }
 
-void instrument_change_note_freq(struct Instrument* ins, int32_t index, int32_t note_value) {
-  struct Note_info* note = &ins->seq_table[index];
+void instrument_change_note_freq(struct Instrument* ins, int32_t id, int32_t note_value) {
+  struct Note_info* note = &ins->seq_table[id];
   note->note_value = note_value;
+}
+
+void instrument_change_attack(struct Instrument* ins, int32_t id, float value) {
+  struct Note_info* note = &ins->seq_table[id];
+  note->attack_speed = value;
 }
 
 void instrument_connect_note(struct Instrument* ins, int32_t location, int32_t id) {

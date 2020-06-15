@@ -1,2 +1,8 @@
 - Tempo (fixa timings och ge möjlighet att ändra tempo)
 - Tap funktionalitet
+- Attributuppdatering:
+	- V: volume
+	- A: attack
+	- H: hold
+	- R: release
+	- W: waveshape
