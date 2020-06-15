@@ -42,12 +42,15 @@ struct Instrument {
   int16_t seq_node_count;
   int16_t index;
   int16_t state;
+  int16_t step;
   float time;
 };
 
 void instrument_init(struct Instrument* ins);
 
 void instrument_play_note(struct Instrument* ins, int16_t id);
+
+void instruments_update();
 
 float instrument_process(struct Instrument* ins);
 

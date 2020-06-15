@@ -15,15 +15,15 @@ enum Note_state {
   STATE_RELEASE,
 };
 
-static float tempo = 40.0f;
-static int step = 0;
+static float tempo = 1.0f / 5.0f;
 static float amp_max = 0.2f;
 
 void instrument_init(struct Instrument* ins) {
   ins->seq_node_count = 0;
   ins->index = 0;
   ins->state = I_ACTIVE;
-  ins->time = 0;
+  ins->time = engine.time;
+  ins->step = 0;
   for (int32_t i = 0; i < BAR_LENGTH; i++)
     ins->bar_seq[i] = -1;
 }
@@ -38,14 +38,13 @@ void instrument_play_note(struct Instrument* ins, int16_t id) {
 
 float instrument_process(struct Instrument* ins) {
   float result = 0;
-  ins->time += engine.delta_time;
-  if (ins->time >= tempo && engine.is_playing) {
-    ins->time -= tempo;
-    if (ins->bar_seq[step] >= 0) {
-      ins->index = ins->bar_seq[step];
+  if (engine.time >= ins->time + tempo && engine.is_playing) {
+    if (ins->bar_seq[ins->step] >= 0) {
+      ins->index = ins->bar_seq[ins->step];
       instrument_play_note(ins, ins->index);
     }
-    step = (step + 1) % BAR_LENGTH;
+    ins->step = (ins->step + 1) % BAR_LENGTH;
+    ins->time = engine.time;
   }
 
   for (int32_t i = 0; i < MAX_SEQ_NODES; i++) {
