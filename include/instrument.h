@@ -23,10 +23,10 @@ struct Note_info {
   float freq;
   int32_t note_value;
   float amp;
-  float release_speed;
-  float attack_speed;
-  int32_t hold_time;
-  int32_t time;
+  float attack_time;
+  float hold_time;
+  float release_time;
+  float time;
   int32_t state;
   Oscillator osc_type;
 };
@@ -66,6 +66,6 @@ void instrument_change_osc(struct Instrument* ins, int32_t id, Oscillator osc_ty
 
 void instrument_connect_note(struct Instrument* ins, int32_t location, int32_t id);
 
-int32_t instrument_add_note(struct Instrument* ins, int32_t note_value, float release_speed, float attack_speed, float hold_time, Oscillator osc_type);
+int32_t instrument_add_note(struct Instrument* ins, int32_t note_value, float attack_time, float hold_time, float release_time, Oscillator osc_type);
 
 #endif

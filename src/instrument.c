@@ -50,21 +50,21 @@ float instrument_process(struct Instrument* ins) {
     struct Note_info* note = &ins->seq_table[i];
     switch (note->state) {
       case STATE_ATTACK: {
-        note->amp += note->attack_speed;
-        if (note->amp > amp_max) {
+        note->amp += engine.delta_time * (1.0f / note->attack_time);
+        if (note->amp >= amp_max) {
           note->amp = amp_max;
           note->state = STATE_HOLD;
-          note->time = engine.tick;
+          note->time = engine.time;
         }
         break;
       }
       case STATE_HOLD: {
-        if (note->time + note->hold_time < engine.tick)
+        if (engine.time >= note->time + note->hold_time)
           note->state = STATE_RELEASE;
         break;
       }
       case STATE_RELEASE: {
-        note->amp -= note->release_speed;
+        note->amp -= engine.delta_time * (1.0f / note->release_time);
         if (note->amp <= 0)
           note->amp = 0;
         break;
@@ -98,7 +98,7 @@ void instrument_change_note_freq(struct Instrument* ins, int32_t id, int32_t not
 
 void instrument_change_attack(struct Instrument* ins, int32_t id, float value) {
   struct Note_info* note = &ins->seq_table[id];
-  note->attack_speed = value;
+  note->attack_time = value;
 }
 
 void instrument_change_hold(struct Instrument* ins, int32_t id, float value) {
@@ -108,7 +108,7 @@ void instrument_change_hold(struct Instrument* ins, int32_t id, float value) {
 
 void instrument_change_release(struct Instrument* ins, int32_t id, float value) {
   struct Note_info* note = &ins->seq_table[id];
-  note->release_speed = value;
+  note->release_time = value;
 }
 
 void instrument_change_osc(struct Instrument* ins, int32_t id, Oscillator osc_type) {
@@ -123,7 +123,7 @@ void instrument_connect_note(struct Instrument* ins, int32_t location, int32_t i
   ins->bar_seq[location] = id;
 }
 
-int32_t instrument_add_note(struct Instrument* ins, int32_t note_value, float release_speed, float attack_speed, float hold_time, Oscillator osc_type) {
+int32_t instrument_add_note(struct Instrument* ins, int32_t note_value, float attack_time, float hold_time, float release_time, Oscillator osc_type) {
   assert(ins != NULL);
   int32_t id = ins->seq_node_count;
   if (id >= MAX_SEQ_NODES) {
@@ -133,9 +133,9 @@ int32_t instrument_add_note(struct Instrument* ins, int32_t note_value, float re
   struct Note_info* note = &ins->seq_table[ins->seq_node_count++];
   note->note_value = note_value;
   note->freq = NOTE_FREQ(note_value);
-  note->release_speed = release_speed;
-  note->attack_speed = attack_speed;
+  note->attack_time = attack_time;
   note->hold_time = hold_time;
+  note->release_time = release_time;
   note->osc_type = osc_type;
   return id;
 }

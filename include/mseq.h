@@ -19,8 +19,8 @@ typedef struct Engine {
   struct Instrument instruments[MAX_INSTRUMENTS];
   int32_t instrument_count;
   int32_t tick;
-  double delta_time;
-  double time;
+  float delta_time;
+  float time;
   float tempo;
   uint8_t is_playing;
 } Engine;

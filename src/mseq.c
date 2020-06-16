@@ -25,7 +25,7 @@ static int32_t open_stream();
 int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data) {
   float* out = (float*)out_buff;
   (void)in_buff; (void)time_info; (void)flags; (void)user_data;
-  double elapsed_time;
+  float elapsed_time;
   old = new;
   for (int32_t i = 0; i < (int32_t)frames_per_buffer; i++) {
     float frame = 0;
@@ -34,7 +34,6 @@ int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frame
       if (ins->state == I_ACTIVE)
         frame += instrument_process(ins);
     }
-    frame = effect_bitcrush(frame, 0.35f, 10.0f);
     *out++ = frame;
     *out++ = frame;
     engine.tick++;
@@ -102,14 +101,15 @@ int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_
   engine.out_port.hostApiSpecificStreamInfo = NULL;
 #if !defined(COMP_SHARED_LIB)
   struct Instrument* ins = mseq_add_instrument();
-  instrument_add_note(ins, 12, 0.00005f, 0.01f, 100, OSC_TRIANGLE);
-  instrument_add_note(ins, 12, 0.00005f, 0.01f, 100, OSC_TRIANGLE);
-  instrument_add_note(ins, 12, 0.00005f, 0.01f, 100, OSC_TRIANGLE);
-  instrument_add_note(ins, 12, 0.00005f, 0.01f, 100, OSC_TRIANGLE);
+  //             note value | attack | hold | release | oscillator type
+  instrument_add_note(ins, 12, 0.01f, 0.01f, 500, OSC_TRIANGLE);
+  instrument_add_note(ins, 12, 0.01f, 0.01f, 500, OSC_TRIANGLE);
+  instrument_add_note(ins, 12, 0.01f, 0.01f, 500, OSC_TRIANGLE);
+  instrument_add_note(ins, 24, 0.01f, 0.01f, 500, OSC_TRIANGLE);
   instrument_connect_note(ins, 0, 0);
   instrument_connect_note(ins, 4, 1);
   instrument_connect_note(ins, 8, 2);
-  instrument_connect_note(ins, 12, 2);
+  instrument_connect_note(ins, 12, 3);
 #endif
   return 0;
 }
