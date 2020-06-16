@@ -101,11 +101,11 @@ int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_
   engine.out_port.hostApiSpecificStreamInfo = NULL;
 #if !defined(COMP_SHARED_LIB)
   struct Instrument* ins = mseq_add_instrument();
-  //             note value | attack | hold | release | oscillator type
-  instrument_add_note(ins, 12, 0.01f, 0.01f, 500, OSC_TRIANGLE);
-  instrument_add_note(ins, 12, 0.01f, 0.01f, 500, OSC_TRIANGLE);
-  instrument_add_note(ins, 12, 0.01f, 0.01f, 500, OSC_TRIANGLE);
-  instrument_add_note(ins, 24, 0.01f, 0.01f, 500, OSC_TRIANGLE);
+  //         note value | volume | attack | hold | release | oscillator type
+  instrument_add_note(ins, 12, 0.5f, 0.1, 0.1, 0.1, OSC_TRIANGLE);
+  instrument_add_note(ins, 12, 0.5f, 0.1, 0.1, 0.1, OSC_TRIANGLE);
+  instrument_add_note(ins, 12, 0.5f, 0.1, 0.1, 0.1, OSC_TRIANGLE);
+  instrument_add_note(ins, 24, 0.5f, 0.1, 0.1, 0.1, OSC_TRIANGLE);
   instrument_connect_note(ins, 0, 0);
   instrument_connect_note(ins, 4, 1);
   instrument_connect_note(ins, 8, 2);

@@ -15,7 +15,7 @@ enum Note_state {
   STATE_RELEASE,
 };
 
-static float amp_max = 0.2f;
+static float amp_max = 0.5f;
 
 void instrument_init(struct Instrument* ins) {
   ins->seq_node_count = 0;
@@ -74,16 +74,16 @@ float instrument_process(struct Instrument* ins) {
     }
     switch (note->osc_type) {
       case OSC_SINE:
-        result += wf_sine(note->amp, note->freq);
+        result += wf_sine(note->amp * note->volume, note->freq);
         break;
       case OSC_TRIANGLE:
-        result += wf_triangle(note->amp, note->freq);
+        result += wf_triangle(note->amp * note->volume, note->freq);
         break;
       case OSC_SQUARE:
-        result += wf_square(note->amp, note->freq);
+        result += wf_square(note->amp * note->volume, note->freq);
         break;
       case OSC_SAW:
-        result += wf_saw(note->amp, note->freq);
+        result += wf_saw(note->amp * note->volume, note->freq);
         break;
     }
   }
@@ -94,6 +94,11 @@ float instrument_process(struct Instrument* ins) {
 void instrument_change_note_freq(struct Instrument* ins, int32_t id, int32_t note_value) {
   struct Note_info* note = &ins->seq_table[id];
   note->note_value = note_value;
+}
+
+void instrument_change_volume(struct Instrument* ins, int32_t id, float value) {
+  struct Note_info* note = &ins->seq_table[id];
+  note->volume = value;
 }
 
 void instrument_change_attack(struct Instrument* ins, int32_t id, float value) {
@@ -123,7 +128,7 @@ void instrument_connect_note(struct Instrument* ins, int32_t location, int32_t i
   ins->bar_seq[location] = id;
 }
 
-int32_t instrument_add_note(struct Instrument* ins, int32_t note_value, float attack_time, float hold_time, float release_time, Oscillator osc_type) {
+int32_t instrument_add_note(struct Instrument* ins, int32_t note_value, float volume, float attack_time, float hold_time, float release_time, Oscillator osc_type) {
   assert(ins != NULL);
   int32_t id = ins->seq_node_count;
   if (id >= MAX_SEQ_NODES) {
@@ -133,6 +138,7 @@ int32_t instrument_add_note(struct Instrument* ins, int32_t note_value, float at
   struct Note_info* note = &ins->seq_table[ins->seq_node_count++];
   note->note_value = note_value;
   note->freq = NOTE_FREQ(note_value);
+  note->volume = volume;
   note->attack_time = attack_time;
   note->hold_time = hold_time;
   note->release_time = release_time;
