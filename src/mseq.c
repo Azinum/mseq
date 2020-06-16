@@ -34,6 +34,7 @@ int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frame
       if (ins->state == I_ACTIVE)
         frame += instrument_process(ins);
     }
+    frame = effect_bitcrush(frame, 0.35f, 10.0f);
     *out++ = frame;
     *out++ = frame;
     engine.tick++;
@@ -81,7 +82,7 @@ int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_
   engine.delta_time = 0;
   engine.time = 0;
   engine.is_playing = 1;
-
+  mseq_set_tempo(120);
   int32_t device_count = Pa_GetDeviceCount();
   int32_t output_device = output_device_id % device_count;
   if (output_device_id < 0)
@@ -101,20 +102,24 @@ int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_
   engine.out_port.hostApiSpecificStreamInfo = NULL;
 #if !defined(COMP_SHARED_LIB)
   struct Instrument* ins = mseq_add_instrument();
-  instrument_add_note(ins, 12, 0.00005f, 0.01f, 100, OSC_SINE);
-  instrument_add_note(ins, 24, 0.00005f, 0.01f, 100, OSC_SINE);
-  instrument_add_note(ins, 24, 0.00005f, 0.01f, 100, OSC_SINE);
-  instrument_add_note(ins, 24, 0.00005f, 0.01f, 100, OSC_SINE);
+  instrument_add_note(ins, 12, 0.00005f, 0.01f, 100, OSC_TRIANGLE);
+  instrument_add_note(ins, 12, 0.00005f, 0.01f, 100, OSC_TRIANGLE);
+  instrument_add_note(ins, 12, 0.00005f, 0.01f, 100, OSC_TRIANGLE);
+  instrument_add_note(ins, 12, 0.00005f, 0.01f, 100, OSC_TRIANGLE);
   instrument_connect_note(ins, 0, 0);
   instrument_connect_note(ins, 4, 1);
   instrument_connect_note(ins, 8, 2);
-  instrument_connect_note(ins, 12, 3);
+  instrument_connect_note(ins, 12, 2);
 #endif
   return 0;
 }
 
 void mseq_toggle_play() {
   engine.is_playing = !engine.is_playing;
+}
+
+void mseq_set_tempo(int32_t tempo) {
+  engine.tempo = 60.0f / tempo;
 }
 
 struct Instrument* mseq_add_instrument() {

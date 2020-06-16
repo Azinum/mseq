@@ -15,7 +15,6 @@ enum Note_state {
   STATE_RELEASE,
 };
 
-static float tempo = 1.0f / 5.0f;
 static float amp_max = 0.2f;
 
 void instrument_init(struct Instrument* ins) {
@@ -38,7 +37,7 @@ void instrument_play_note(struct Instrument* ins, int16_t id) {
 
 float instrument_process(struct Instrument* ins) {
   float result = 0;
-  if (engine.time >= ins->time + tempo && engine.is_playing) {
+  if (engine.time >= ins->time + (engine.tempo / 4.0f) && engine.is_playing) {
     if (ins->bar_seq[ins->step] >= 0) {
       ins->index = ins->bar_seq[ins->step];
       instrument_play_note(ins, ins->index);
@@ -91,6 +90,7 @@ float instrument_process(struct Instrument* ins) {
   return result;
 }
 
+// TODO(lucas): Validate that id is within range for the property modify/change functions
 void instrument_change_note_freq(struct Instrument* ins, int32_t id, int32_t note_value) {
   struct Note_info* note = &ins->seq_table[id];
   note->note_value = note_value;
@@ -99,6 +99,16 @@ void instrument_change_note_freq(struct Instrument* ins, int32_t id, int32_t not
 void instrument_change_attack(struct Instrument* ins, int32_t id, float value) {
   struct Note_info* note = &ins->seq_table[id];
   note->attack_speed = value;
+}
+
+void instrument_change_hold(struct Instrument* ins, int32_t id, float value) {
+  struct Note_info* note = &ins->seq_table[id];
+  note->hold_time = value;
+}
+
+void instrument_change_release(struct Instrument* ins, int32_t id, float value) {
+  struct Note_info* note = &ins->seq_table[id];
+  note->release_speed = value;
 }
 
 void instrument_change_osc(struct Instrument* ins, int32_t id, Oscillator osc_type) {

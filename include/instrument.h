@@ -58,6 +58,10 @@ void instrument_change_note_freq(struct Instrument* ins, int32_t index, int32_t 
 
 void instrument_change_attack(struct Instrument* ins, int32_t id, float value);
 
+void instrument_change_hold(struct Instrument* ins, int32_t id, float value);
+
+void instrument_change_release(struct Instrument* ins, int32_t id, float value);
+
 void instrument_change_osc(struct Instrument* ins, int32_t id, Oscillator osc_type);
 
 void instrument_connect_note(struct Instrument* ins, int32_t location, int32_t id);
