@@ -102,14 +102,17 @@ int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_
 #if !defined(COMP_SHARED_LIB)
   struct Instrument* ins = mseq_add_instrument();
   //         note value | volume | attack | hold | release | oscillator type
-  instrument_add_note(ins, 12, 0.5f, 0.1, 0.1, 0.1, OSC_TRIANGLE);
-  instrument_add_note(ins, 12, 0.5f, 0.1, 0.1, 0.1, OSC_TRIANGLE);
-  instrument_add_note(ins, 12, 0.5f, 0.1, 0.1, 0.1, OSC_TRIANGLE);
-  instrument_add_note(ins, 24, 0.5f, 0.1, 0.1, 0.1, OSC_TRIANGLE);
+  instrument_add_note(ins, 12, 0.5f, 0.5, 0.1, 0.5, OSC_TRIANGLE);
+  instrument_add_note(ins, 12, 0.5f, 0.5, 0.1, 0.5, OSC_TRIANGLE);
+  instrument_add_note(ins, 12, 0.5f, 0.5, 0.1, 0.5, OSC_TRIANGLE);
+  instrument_add_note(ins, 24, 0.5f, 0.5, 0.1, 0.5, OSC_TRIANGLE);
   instrument_connect_note(ins, 0, 0);
   instrument_connect_note(ins, 4, 1);
   instrument_connect_note(ins, 8, 2);
   instrument_connect_note(ins, 12, 3);
+#define RYTHM_SIZE 4
+  int32_t rythm[RYTHM_SIZE] = {0, 4, 8, 14};
+  instrument_set_rythm(ins, RYTHM_SIZE, rythm);
 #endif
   return 0;
 }

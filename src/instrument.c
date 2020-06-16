@@ -90,7 +90,23 @@ float instrument_process(struct Instrument* ins) {
   return result;
 }
 
-// TODO(lucas): Validate that id is within range for the property modify/change functions
+void instrument_set_rythm(struct Instrument* ins, int32_t size, int32_t* arr) {
+  int32_t id_list[MAX_SEQ_NODES] = {0};
+  int32_t count = 0;
+  for (int32_t i = 0; i < BAR_LENGTH; i++) {
+    int32_t id = ins->bar_seq[i];
+    if (id >= 0 && count < MAX_SEQ_NODES) {
+      id_list[count++] = id;
+      ins->bar_seq[i] = -1;
+    }
+  }
+  for (int32_t i = 0; i < count && i < size; i++) {
+    int32_t id = id_list[i];
+    ins->bar_seq[arr[i]] = id;
+  }
+}
+
+// TODO(lucas): Validate that id is within range for the property modification functions
 void instrument_change_note_freq(struct Instrument* ins, int32_t id, int32_t note_value) {
   struct Note_info* note = &ins->seq_table[id];
   note->note_value = note_value;

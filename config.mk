@@ -1,6 +1,6 @@
 # config.mk
 
-CC=clang
+CC=gcc
 
 PROG_NAME=mseq
 
