@@ -27,11 +27,33 @@ void args_parse(struct Args* args, int argc, char** argv) {
         case 'd': {
           if (i + 1 >= argc) {
             fprintf(stderr, "Missing argument\n");
-            break;
+            return;
           }
-          char* value = argv[i + 1];
-          int32_t id = atoi(value);
-          args->output_device_id = id;
+          char* argument = argv[i + 1];
+          int32_t value = atoi(argument);
+          args->output_device_id = value;
+          i++;
+          break;
+        }
+        case 's': {
+          if (i + 1 >= argc) {
+            fprintf(stderr, "Missing argument\n");
+            return;
+          }
+          char* argument = argv[i + 1];
+          int32_t value = atoi(argument);
+          args->sample_rate = value;
+          i++;
+          break;
+        }
+        case 'f': {
+          if (i + 1 >= argc) {
+            fprintf(stderr, "Missing argument\n");
+            return;
+          }
+          char* argument = argv[i + 1];
+          int32_t value = atoi(argument);
+          args->frames_per_buffer = value;
           i++;
           break;
         }
