@@ -50,8 +50,8 @@ inline float effect_comb_filter(float input, float mix, float amount) {
     index = BUFFER_SIZE;
   current %= BUFFER_SIZE;
   result = buffer[current++];
-  result = amount / buffer[index % 128];
-  result /= amount;
+  result += amount / buffer[index % 128];
+  result *= 0.1f / amount;
   return (input * dry) + (result * wet);
 }
 

@@ -16,6 +16,7 @@ enum Note_state {
 };
 
 static float amp_max = 0.5f;
+int32_t id_list[MAX_SEQ_NODES] = {0, 4, 8, 12};
 
 void instrument_init(struct Instrument* ins) {
   ins->seq_node_count = 0;
@@ -91,7 +92,6 @@ float instrument_process(struct Instrument* ins) {
 }
 
 void instrument_set_rythm(struct Instrument* ins, int32_t size, int32_t* arr) {
-  int32_t id_list[MAX_SEQ_NODES] = {0};
   int32_t count = 0;
   for (int32_t i = 0; i < BAR_LENGTH; i++) {
     int32_t id = ins->bar_seq[i];
@@ -137,10 +137,11 @@ void instrument_change_osc(struct Instrument* ins, int32_t id, Oscillator osc_ty
   note->osc_type = osc_type;
 }
 
-void instrument_connect_note(struct Instrument* ins, int32_t location, int32_t id) {
+void instrument_connect_note(struct Instrument* ins, int32_t slot, int32_t id) {
   assert(ins != NULL);
   assert(id < MAX_SEQ_NODES);
-  assert(location < BAR_LENGTH);
+  assert(slot < BAR_LENGTH);
+  int32_t location = id_list[slot];
   ins->bar_seq[location] = id;
 }
 
