@@ -18,6 +18,7 @@
 
 Engine engine;
 static struct timeval old, new;
+static uint8_t first_step = 0;
 
 static int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frames_per_buffer, const PaStreamCallbackTimeInfo* time_info, PaStreamCallbackFlags flags, void* user_data);
 static int32_t open_stream();
@@ -38,7 +39,15 @@ int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frame
     *out++ = frame;
     engine.tick++;
   }
-  
+  struct Instrument* ins = &engine.instruments[0];
+  if (ins->step == 0 && !first_step) {
+    if (engine.sequence_begin != 0)
+      engine.sequence_begin();
+    first_step = 1;
+  }
+  else if (ins->step != 0){
+    first_step = 0;
+  }
   gettimeofday(&new, NULL);
   elapsed_time = (new.tv_sec - old.tv_sec) * 1000.0f;
   elapsed_time += (new.tv_usec - old.tv_usec) / 1000.0f;
@@ -68,7 +77,7 @@ int32_t open_stream() {
   return 0;
 }
 
-int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_per_buffer) {
+int32_t mseq_init(int32_t output_device_id, callback_func sequence_begin, int32_t sample_rate, int32_t frames_per_buffer) {
   PaError err = Pa_Initialize();
   if (err != paNoError) {
     Pa_Terminate();
@@ -80,6 +89,7 @@ int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_
   engine.tick = 0;
   engine.delta_time = 0;
   engine.time = 0;
+  engine.sequence_begin = sequence_begin;
   engine.is_playing = 1;
   mseq_set_tempo(120);
   int32_t device_count = Pa_GetDeviceCount();

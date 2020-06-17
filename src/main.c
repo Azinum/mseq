@@ -11,10 +11,11 @@ struct Args {
   int32_t frames_per_buffer;
 };
 
-static void some_func();
+static void wait_callback();
 static void args_parse(struct Args* args, int argc, char** argv);
 
-void some_func() {
+void wait_callback() {
+  printf("Press ENTER to exit program.\n");
   getchar();
 }
 
@@ -48,8 +49,8 @@ int main(int argc, char** argv) {
     .frames_per_buffer = 512
   };
   args_parse(&args, argc, argv);
-  mseq_init(args.output_device_id, args.sample_rate, args.frames_per_buffer);
-  mseq_start(some_func);
+  mseq_init(args.output_device_id, NULL, args.sample_rate, args.frames_per_buffer);
+  mseq_start(wait_callback);
   mseq_free();
   return 0;
 }

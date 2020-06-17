@@ -22,12 +22,13 @@ typedef struct Engine {
   float delta_time;
   float time;
   float tempo;
+  callback_func sequence_begin;
   uint8_t is_playing;
 } Engine;
 
 extern Engine engine;
 
-int32_t mseq_init(int32_t output_device_id, int32_t sample_rate, int32_t frames_per_buffer);
+int32_t mseq_init(int32_t output_device_id, callback_func sequence_begin, int32_t sample_rate, int32_t frames_per_buffer);
 
 void mseq_toggle_play();
 
