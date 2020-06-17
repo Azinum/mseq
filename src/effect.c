@@ -5,29 +5,52 @@
 #include "effect.h"
 
 #define MIX_FACTOR 0.5f
-#define AMOUNT 10
+#define AMOUNT 5
+
+#define BUFFER_SIZE 512
+
+static float buffer[BUFFER_SIZE];
+static int32_t index = BUFFER_SIZE;
+static int32_t current = 0;
 
 float effect_stack_process(float input, Effect* effect_stack, int32_t count) {
   float result = input;
   for (int32_t i = 0; i < count; i++) {
     switch (effect_stack[i]) {
       case EFFECT_BITCRUSH:
-        result += effect_bitcrush(result, MIX_FACTOR, AMOUNT);
+        result = effect_bitcrush(result, MIX_FACTOR, AMOUNT);
         break;
       case EFFECT_WEIRD:
-        result += effect_weird(result, MIX_FACTOR, AMOUNT);
+        result = effect_weird(result, MIX_FACTOR, AMOUNT);
         break;
       case EFFECT_DISTORTION:
-        result += effect_distortion(result, MIX_FACTOR, AMOUNT);
+        result = effect_distortion(result, MIX_FACTOR, AMOUNT);
         break;
       case EFFECT_NOISEGATE:
-        result += effect_noisegate(result, 1.0f, 0.1f);
+        result = effect_noisegate(result, 1.0f, 0.1f);
+        break;
+      case EFFECT_COMB_FILTER:
+        result = effect_comb_filter(result, MIX_FACTOR, AMOUNT);
         break;
       default:
         break;
     }
   }
   return result;
+}
+
+inline float effect_comb_filter(float input, float mix, float amount) {
+  float result = input;
+  float dry = 1 - mix;
+  float wet = 1 - dry;
+  buffer[index--] = input;
+  if (index <= 0)
+    index = BUFFER_SIZE;
+  current %= BUFFER_SIZE;
+  result = buffer[current++];
+  result = amount / buffer[index % 128];
+  result /= amount;
+  return (input * dry) + (result * wet);
 }
 
 inline float effect_bitcrush(float input, float mix, float amount) {

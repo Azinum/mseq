@@ -35,7 +35,9 @@ int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frame
       if (ins->state == I_ACTIVE)
         frame += instrument_process(ins);
     }
-    frame += effect_stack_process(frame, engine.effect_stack, engine.effect_count);
+    frame = effect_stack_process(frame, engine.effect_stack, engine.effect_count);
+    // frame = effect_weird(frame, 0.5f, 20.0f);
+    // frame = effect_distortion(frame, 0.5f, 20.0f);
     *out++ = frame;
     *out++ = frame;
     engine.tick++;
@@ -129,8 +131,10 @@ int32_t mseq_init(int32_t output_device_id, callback_func sequence_begin, int32_
   int32_t rythm[RYTHM_SIZE] = {0, 4, 8, 12, 14};
   instrument_set_rythm(ins, RYTHM_SIZE, rythm);
 
-  mseq_add_effect(EFFECT_WEIRD);
-  mseq_add_effect(EFFECT_DISTORTION);
+  // mseq_add_effect(EFFECT_DISTORTION);
+  mseq_add_effect(EFFECT_COMB_FILTER);
+  // mseq_add_effect(EFFECT_BITCRUSH);
+  // mseq_add_effect(EFFECT_DISTORTION);
 #endif
   return 0;
 }
