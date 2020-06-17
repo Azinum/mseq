@@ -16,7 +16,7 @@ enum Note_state {
 };
 
 static float amp_max = 0.5f;
-int32_t id_list[MAX_SEQ_NODES] = {0, 4, 8, 12};
+int32_t rythm_arr[MAX_SEQ_NODES] = {0, 4, 8, 12};
 
 void instrument_init(struct Instrument* ins) {
   ins->seq_node_count = 0;
@@ -91,7 +91,9 @@ float instrument_process(struct Instrument* ins) {
   return result;
 }
 
+
 void instrument_set_rythm(struct Instrument* ins, int32_t size, int32_t* arr) {
+  int32_t id_list[MAX_SEQ_NODES] = {0};
   int32_t count = 0;
   for (int32_t i = 0; i < BAR_LENGTH; i++) {
     int32_t id = ins->bar_seq[i];
@@ -101,6 +103,7 @@ void instrument_set_rythm(struct Instrument* ins, int32_t size, int32_t* arr) {
     }
   }
   for (int32_t i = 0; i < count && i < size; i++) {
+    rythm_arr[i] = arr[i];
     int32_t id = id_list[i];
     ins->bar_seq[arr[i]] = id;
   }
@@ -141,7 +144,7 @@ void instrument_connect_note(struct Instrument* ins, int32_t slot, int32_t id) {
   assert(ins != NULL);
   assert(id < MAX_SEQ_NODES);
   assert(slot < BAR_LENGTH);
-  int32_t location = id_list[slot];
+  int32_t location = rythm_arr[slot];
   ins->bar_seq[location] = id;
 }
 
