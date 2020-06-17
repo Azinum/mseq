@@ -41,6 +41,8 @@ float effect_stack_process(float input, Effect* effect_stack, int32_t count) {
 
 inline float effect_comb_filter(float input, float mix, float amount) {
   float result = input;
+  if (fabs(input) < 0.01f)
+    return 0;
   float dry = 1 - mix;
   float wet = 1 - dry;
   buffer[index--] = input;
