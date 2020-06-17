@@ -30,11 +30,12 @@ int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frame
   old = new;
   for (int32_t i = 0; i < (int32_t)frames_per_buffer; i++) {
     float frame = 0;
-    for (int32_t j = 0; j < MAX_INSTRUMENTS; j++) {
+    for (int32_t j = 0; j < INSTRUMENTS_MAX; j++) {
       struct Instrument* ins = &engine.instruments[j];
       if (ins->state == I_ACTIVE)
         frame += instrument_process(ins);
     }
+    frame += effect_stack_process(frame, engine.effect_stack, engine.effect_count);
     *out++ = frame;
     *out++ = frame;
     engine.tick++;
@@ -86,12 +87,14 @@ int32_t mseq_init(int32_t output_device_id, callback_func sequence_begin, int32_
   }
   engine.sample_rate = sample_rate;
   engine.frames_per_buffer = frames_per_buffer;
+  engine.instrument_count = 0;
+  engine.effect_count = 0;
   engine.tick = 0;
   engine.delta_time = 0;
   engine.time = 0;
   engine.sequence_begin = sequence_begin;
   engine.is_playing = 1;
-  mseq_set_tempo(120);
+  mseq_set_tempo(140);
   int32_t device_count = Pa_GetDeviceCount();
   int32_t output_device = output_device_id % device_count;
   if (output_device_id < 0)
@@ -112,17 +115,22 @@ int32_t mseq_init(int32_t output_device_id, callback_func sequence_begin, int32_
 #if !defined(COMP_SHARED_LIB)
   struct Instrument* ins = mseq_add_instrument();
   //         note value | volume | attack | hold | release | oscillator type
-  instrument_add_note(ins, 12, 0.5f, 0.5, 0.1, 0.5, OSC_TRIANGLE);
-  instrument_add_note(ins, 12, 0.5f, 0.5, 0.1, 0.5, OSC_TRIANGLE);
-  instrument_add_note(ins, 12, 0.5f, 0.5, 0.1, 0.5, OSC_TRIANGLE);
-  instrument_add_note(ins, 24, 0.5f, 0.5, 0.1, 0.5, OSC_TRIANGLE);
+  instrument_add_note(ins, -12, 0.5f, 0.5, 0.1, 500, OSC_SINE);
+  instrument_add_note(ins, -12, 0.5f, 0.5, 0.1, 500, OSC_SINE);
+  instrument_add_note(ins, -12, 0.5f, 0.5, 0.1, 500, OSC_SINE);
+  instrument_add_note(ins, 0, 0.5f, 0.5, 0.1, 500, OSC_SINE);
+  instrument_add_note(ins, 13, 0.5f, 0.5, 0.1, 1000, OSC_SINE);
   instrument_connect_note(ins, 0, 0);
   instrument_connect_note(ins, 4, 1);
   instrument_connect_note(ins, 8, 2);
   instrument_connect_note(ins, 12, 3);
-#define RYTHM_SIZE 4
-  int32_t rythm[RYTHM_SIZE] = {0, 4, 8, 14};
+  instrument_connect_note(ins, 14, 4);
+#define RYTHM_SIZE 5
+  int32_t rythm[RYTHM_SIZE] = {0, 4, 8, 12, 14};
   instrument_set_rythm(ins, RYTHM_SIZE, rythm);
+
+  mseq_add_effect(EFFECT_WEIRD);
+  mseq_add_effect(EFFECT_DISTORTION);
 #endif
   return 0;
 }
@@ -136,10 +144,22 @@ void mseq_set_tempo(int32_t tempo) {
 }
 
 struct Instrument* mseq_add_instrument() {
-  assert(engine.instrument_count < MAX_INSTRUMENTS);
+  assert(engine.instrument_count < INSTRUMENTS_MAX);
   struct Instrument* ins = &engine.instruments[engine.instrument_count++];
   instrument_init(ins);
   return ins;
+}
+
+void mseq_add_effect(Effect effect) {
+  if (engine.effect_count >= EFFECTS_MAX) {
+    fprintf(stderr, "Effect stack is full\n");
+    return;
+  }
+  engine.effect_stack[engine.effect_count++] = effect;
+}
+
+void mseq_clear_effects() {
+  engine.effect_count = 0;
 }
 
 int32_t mseq_start(callback_func callback) {
