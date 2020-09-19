@@ -53,6 +53,9 @@ int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frame
   elapsed_time = (new.tv_sec - old.tv_sec) * 1000.0f;
   elapsed_time += (new.tv_usec - old.tv_usec) / 1000.0f;
   engine.delta_time = elapsed_time / 1000.0f;
+  if (engine.delta_time >= 1.0f) {
+    engine.delta_time = 1.0f;
+  }
   engine.time += engine.delta_time;
   return paContinue;
 }
