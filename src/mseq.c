@@ -58,9 +58,10 @@ int32_t stereo_callback(const void* in_buff, void* out_buff, unsigned long frame
     engine.delta_time = 1.0f;
   }
   engine.time += engine.delta_time;
-#endif
+#else
   engine.delta_time = (1.0f / engine.sample_rate) * frames_per_buffer;
   engine.time += engine.delta_time;
+#endif
   return paContinue;
 }
 
@@ -99,7 +100,7 @@ int32_t mseq_init(int32_t output_device_id, callback_func sequence_begin, int32_
   engine.time = 0;
   engine.sequence_begin = sequence_begin;
   engine.is_playing = 1;
-  mseq_set_tempo(250);
+  mseq_set_tempo(150);
   int32_t device_count = Pa_GetDeviceCount();
   int32_t output_device = output_device_id % device_count;
   if (output_device_id < 0)
@@ -120,10 +121,10 @@ int32_t mseq_init(int32_t output_device_id, callback_func sequence_begin, int32_
 #if !defined(COMP_SHARED_LIB)
   struct Instrument* ins = mseq_add_instrument();
   //         note value | volume | attack | hold | release | oscillator type
-  instrument_add_note(ins, 24, 0.5f, 0.5, 0.1, 50, OSC_SINE);
-  instrument_add_note(ins, 24, 0.5f, 0.5, 0.1, 50, OSC_SINE);
-  instrument_add_note(ins, 24, 0.5f, 0.5, 0.1, 50, OSC_SINE);
-  instrument_add_note(ins, 24, 0.5f, 0.5, 0.1, 50, OSC_SINE);
+  instrument_add_note(ins, 0, 0.5f, 0.5, 0.1, 50, OSC_SINE);
+  instrument_add_note(ins, 0, 0.5f, 0.5, 0.1, 50, OSC_SINE);
+  instrument_add_note(ins, 0, 0.5f, 0.5, 0.1, 50, OSC_SINE);
+  instrument_add_note(ins, 0, 0.5f, 0.5, 0.1, 50, OSC_SINE);
   instrument_connect_note(ins, 0, 0);
   instrument_connect_note(ins, 1, 1);
   instrument_connect_note(ins, 2, 2);
@@ -132,7 +133,7 @@ int32_t mseq_init(int32_t output_device_id, callback_func sequence_begin, int32_
   int32_t rythm[] = {0, 2, 8, 12};
   instrument_set_rythm(ins, ARR_SIZE(rythm), rythm);
 
- //  mseq_add_effect(EFFECT_COMB_FILTER);
+  mseq_add_effect(EFFECT_COMB_FILTER);
 #endif
   return 0;
 }
