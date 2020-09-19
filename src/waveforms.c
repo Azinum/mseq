@@ -16,15 +16,15 @@ float saw(float n) {
 }
 
 inline float wf_sine(float amp, float freq) {
-  return amp * sin(engine.tick * freq * 2 * PI32 / engine.sample_rate);
+  return amp * sin(fmod(engine.tick * freq * 2 * PI32, 2 * PI32 * engine.sample_rate) / engine.sample_rate);
 }
 
 inline float wf_square(float amp, float freq) {
-  return amp * sign(sin((engine.tick * freq * 2 * PI32) / engine.sample_rate));
+  return amp * sign(sin(fmod(engine.tick * freq * 2 * PI32, 2 * PI32 * engine.sample_rate) / engine.sample_rate));
 }
 
 inline float wf_saw(float amp, float freq) {
-  return amp * saw(sin((fmod(engine.tick, freq) * freq * 2 * PI32) / engine.sample_rate));
+  return amp * saw(sin(fmod(engine.tick * freq * 2 * PI32, 2 * PI32 * engine.sample_rate) / engine.sample_rate));
 }
 
 inline float wf_triangle(float amp, float freq) {
