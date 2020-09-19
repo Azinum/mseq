@@ -39,12 +39,14 @@ void instrument_play_note(struct Instrument* ins, int16_t id) {
 float instrument_process(struct Instrument* ins) {
   float result = 0;
   if (engine.time >= ins->time + (engine.tempo / 4.0f) && engine.is_playing) {
+    // NOTE(lucas): How-much-did-we-miss-compensation
+    float delta = engine.time - (ins->time + (engine.tempo / 4.0f));
     if (ins->bar_seq[ins->step] >= 0) {
       ins->index = ins->bar_seq[ins->step];
       instrument_play_note(ins, ins->index);
     }
     ins->step = (ins->step + 1) % BAR_LENGTH;
-    ins->time = engine.time;
+    ins->time = engine.time - delta;
   }
 
   for (int32_t i = 0; i < MAX_SEQ_NODES; i++) {
